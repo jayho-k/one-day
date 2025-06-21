@@ -1,0 +1,5 @@
+rootProject.name = 'one-day'
+include(":server")
+include(':server:user-server')
+
+include (':data')
