@@ -1,13 +1,11 @@
 # API 명세서
 
 - 기능
-
   - user
     - 유저 생성(회원가입), 삭제, 수정, 조회
       - 로그인, 로그아웃
   - article
     - 게시글 생성, 조회(list), 수정, 삭제, 저장 / 정렬(필터)
-
   - article/like
     - 좋아요 생성, 삭제
   - article/comment
@@ -20,6 +18,7 @@
 
 
 그 외 아이디어
+
 - Ground 생성, 조회, 수정, 삭제 (카페)
   - Ground 가입 신청, 신청 취소 (신청자)
   - Ground 가입 수락, 거절(주인장)
@@ -27,7 +26,7 @@
 
 
 
-## Response 
+## Response
 
 ### 성공
 
@@ -82,11 +81,6 @@ Response
 ```
 
 ```json
-// 실패
-{
-  "status": 404,
-  "message": "사용자를 찾을 수 없습니다."
-}
 // 409 Conflict
 {
   "status": 409,
@@ -201,7 +195,7 @@ Response
 
 
 
-### 회원 삭제 
+### 회원 삭제
 
 | 항목   | 설명                    |
 | ------ | ----------------------- |
@@ -395,7 +389,7 @@ Response
 
 
 
-### 게시글 임시 삭제 
+### 게시글 임시 삭제
 
 | 항목         | 설명                            |
 | ------------ | ------------------------------- |
@@ -424,7 +418,7 @@ Response
 
 
 
-### 게시글 삭제 
+### 게시글 삭제
 
 | 항목         | 설명                 |
 | ------------ | -------------------- |
@@ -455,11 +449,11 @@ Response
 
 ### 게시글 저장
 
-| 항목   | 설명                          |
-| ------ | ----------------------------- |
-| 메소드 | POST                          |
-| URL    | /article/{articleId}/save     |
-| 설명   | user가 관심있는 게시글을 저장 |
+| 항목   | 설명                                    |
+| ------ | --------------------------------------- |
+| 메소드 | POST                                    |
+| URL    | /article/{articleId}/user/{userId}/save |
+| 설명   | user가 관심있는 게시글을 저장           |
 
 Request
 
@@ -588,7 +582,7 @@ Response
 | 항목   | 설명      |
 | ------ | --------- |
 | 메소드 | POST      |
-| URL    | /comments |
+| URL    | /comment  |
 | 설명   | 댓글 생성 |
 
 Request
@@ -623,12 +617,12 @@ Response
 
 ### 댓글 리스트 조회
 
-| 항목          | 설명                               |
-| ------------- | ---------------------------------- |
-| 메소드        | GET                                |
-| URL           | comments/                          |
-| 설명          | 댓글 생성                          |
-| Request Param | articleId, lastCommentId, pageSize |
+| 항목          | 설명                                                 |
+| ------------- | ---------------------------------------------------- |
+| 메소드        | GET                                                  |
+| URL           | comment/scroll                                       |
+| 설명          | 댓글 생성                                            |
+| Request Param | Long articleId, Long lastCommentId, Integer pageSize |
 
 Response
 
@@ -664,12 +658,12 @@ Response
 
 ### 댓글 수정
 
-| 항목   | 설명                 |
-| ------ | -------------------- |
-| 메소드 | PATCH                |
-| URL    | comments/{commentId} |
-| 설명   | 댓글 수정            |
-|        |                      |
+| 항목   | 설명                |
+| ------ | ------------------- |
+| 메소드 | PATCH               |
+| URL    | comment/{commentId} |
+| 설명   | 댓글 수정           |
+|        |                     |
 
 Request
 
@@ -750,8 +744,8 @@ Response
 
 ```json
 {
-    "status" : 200,
-    "message": "조회수 증가 삭제가 성공했습니다.",
+  "status" : 200,
+  "message": "조회수 증가가 성공했습니다.",
 }
 ```
 
@@ -777,8 +771,8 @@ Response
 
 ```json
 {
-    "status" : 200,
-    "message": "해당 게시글의 조회수가 조회되었습니다.",
+  "status" : 200,
+  "message": "해당 게시글의 조회수가 조회되었습니다.",
 }
 ```
 
@@ -808,19 +802,19 @@ Response
 
 ```json
 {
-    "status" : 200,
-    "message": "이전 대화 이력이 조회되었습니다.",
-    "data":{
-        "chat":
-        	[
-                {
-                    "chatting":"0:ai답변/1:user질문",
-                 	"timestamp":"20250619000000",
-                    "chattingLength":1234
-             	},
-                ....
-            ]
-    }
+  "status" : 200,
+  "message": "이전 대화 이력이 조회되었습니다.",
+  "data":{
+    "chat":
+    [
+      {
+        "chatting":"0:ai답변/1:user질문",
+        "timestamp":"20250619000000",
+        "chattingLength":1234
+      },
+      ....
+    ]
+  }
 }
 ```
 
@@ -847,9 +841,9 @@ Request
 
 ```json
 {
-    "userId":1,
-    "query":"대화를 생성할 수 있니?",
-    "timestamp":"20250619000000"
+  "userId":1,
+  "query":"대화를 생성할 수 있니?",
+  "timestamp":"20250619000000"
 }
 ```
 
@@ -857,11 +851,11 @@ Response
 
 ```json
 {
-    "status" : 200,
-    "message": "이전 대화 이력이 조회되었습니다.",
-    "data":{
-        "chat":"ai답변"
-    }
+  "status" : 200,
+  "message": "이전 대화 이력이 조회되었습니다.",
+  "data":{
+    "chat":"ai답변"
+  }
 }
 ```
 
