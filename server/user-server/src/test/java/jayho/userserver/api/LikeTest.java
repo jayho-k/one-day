@@ -1,12 +1,10 @@
 package jayho.userserver.api;
 
-import jayho.userserver.service.request.LikeRequest;
 import jayho.userserver.service.response.BaseResponse;
 import jayho.userserver.service.response.BaseResponseWithData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +12,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.client.RestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,9 +38,9 @@ public class LikeTest {
         ResponseEntity<BaseResponse> res2 = createLike4xx(null, userId);
         ResponseEntity<BaseResponse> res3 = createLike4xx(articleId, null);
 
-        assertThat(HttpStatus.CREATED).isEqualTo(res1.getStatusCode());
-        assertThat(HttpStatus.NOT_FOUND).isEqualTo(res2.getStatusCode());
-        assertThat(HttpStatus.NOT_FOUND).isEqualTo(res3.getStatusCode());
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
     ResponseEntity<BaseResponse> createLike(Long articleId, Long userId) {
         return restClient.post()
@@ -69,18 +66,16 @@ public class LikeTest {
 
     @Test
     void deleteLikeTest()   {
-
         Long articleId = 1L;
         Long userId = 1L;
 
         ResponseEntity<BaseResponse> res1 = deleteLike(articleId, userId);
         ResponseEntity<BaseResponse> res2 = deleteLike4xx(null, userId);
-        ResponseEntity<BaseResponse> res3 = deleteLike4xx(null, userId);
+        ResponseEntity<BaseResponse> res3 = deleteLike4xx(articleId, null);
 
-        assertThat(HttpStatus.OK).isEqualTo(res1.getStatusCode());
-        assertThat(HttpStatus.NOT_FOUND).isEqualTo(res2.getStatusCode());
-        assertThat(HttpStatus.NOT_FOUND).isEqualTo(res3.getStatusCode());
-
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
     ResponseEntity<BaseResponse> deleteLike(Long articleId, Long userId) {
         return restClient.delete()
@@ -100,14 +95,13 @@ public class LikeTest {
 
     @Test
     void getLikeCountTest() {
-
         Long articleId = 1L;
 
         ResponseEntity<BaseResponseWithData> res1 = getLikeCount(articleId);
         ResponseEntity<BaseResponse> res2 = getLikeCount4xx(null);
 
-        assertThat(HttpStatus.OK).isEqualTo(res1.getStatusCode());
-        assertThat(HttpStatus.NOT_FOUND).isEqualTo(res2.getStatusCode());
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     ResponseEntity<BaseResponseWithData> getLikeCount(Long articleId) {

@@ -63,9 +63,9 @@ public class ArticleTest {
                 .writerId(null)
                 .build());
 
-        assertThat(HttpStatus.CREATED).isEqualTo(res1.getStatusCode());
-        assertThat(HttpStatus.BAD_REQUEST).isEqualTo(res2.getStatusCode());
-        assertThat(HttpStatus.BAD_REQUEST).isEqualTo(res3.getStatusCode());
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     ResponseEntity<BaseResponse> createArticle(ArticleCreateRequest request){
@@ -95,10 +95,13 @@ public class ArticleTest {
 
     @Test
     void readArticleTest() {
-        ResponseEntity<BaseResponseWithData> response = readArticle(1L);
+        Long articleId = 1L;
 
-        System.out.println(response);
-        assertThat(HttpStatus.OK).isEqualTo(response.getStatusCode());
+        ResponseEntity<BaseResponseWithData> res1 = readArticle(articleId);
+        ResponseEntity<BaseResponseWithData> res2 = readArticle4xx(null);
+
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     ResponseEntity<BaseResponseWithData> readArticle(Long articleId) {
@@ -107,22 +110,27 @@ public class ArticleTest {
                 .retrieve()
                 .toEntity(BaseResponseWithData.class);
     }
+    ResponseEntity<BaseResponseWithData> readArticle4xx(Long articleId) {
+        return restClient.get()
+                .uri("/article/{articleId}", articleId)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
+                .toEntity(BaseResponseWithData.class);
+    }
 
-    @DisplayName("read all article 테스트")
+
     @Test
     void readAllArticleTest() {
-        ResponseEntity<BaseResponseWithData> res1 = readAllArticle(1, 2L);
-        ResponseEntity<BaseResponseWithData> res2 = readAllArticleFirstPage(1, null);
-        ResponseEntity<BaseResponse> res3 = readAllArticleFirstPage4xx(null, null);
+        Integer pageSize = 1;
+        Long lastArticleId = 1L;
 
-        System.out.println(res1);
-        assertThat(HttpStatus.OK).isEqualTo(res1.getStatusCode());
+        ResponseEntity<BaseResponseWithData> res1 = readAllArticle(pageSize, lastArticleId);
+        ResponseEntity<BaseResponse> res2 = readAllArticleFirstPage4xx(pageSize, null);
+        ResponseEntity<BaseResponse> res3 = readAllArticleFirstPage4xx(null, lastArticleId);
 
-        System.out.println(res2);
-        assertThat(HttpStatus.OK).isEqualTo(res2.getStatusCode());
-
-        System.out.println(res3);
-        assertThat(HttpStatus.BAD_REQUEST).isEqualTo(res3.getStatusCode());
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     ResponseEntity<BaseResponseWithData> readAllArticle(Integer pageSize, Long lastArticleId) {
@@ -151,11 +159,8 @@ public class ArticleTest {
         ResponseEntity<BaseResponseWithData> res1 = updateArticle(1L);
         ResponseEntity<BaseResponseWithData> res2 = updateArticle4xx(null);
 
-        System.out.println(res1);
-        assertThat(HttpStatus.OK).isEqualTo(res1.getStatusCode());
-
-        System.out.println(res2);
-        assertThat(HttpStatus.NOT_FOUND).isEqualTo(res2.getStatusCode());
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     ResponseEntity<BaseResponseWithData> updateArticle(Long articleId) {
@@ -177,11 +182,8 @@ public class ArticleTest {
         ResponseEntity<BaseResponse> res1 = tempDeleteArticle(1L);
         ResponseEntity<BaseResponse> res2 = tempDeleteArticle4xx(null);
 
-        System.out.println(res1);
-        assertThat(HttpStatus.OK).isEqualTo(res1.getStatusCode());
-
-        System.out.println(res2);
-        assertThat(HttpStatus.NOT_FOUND).isEqualTo(res2.getStatusCode());
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     ResponseEntity<BaseResponse> tempDeleteArticle(Long articleId) {
@@ -200,44 +202,29 @@ public class ArticleTest {
 
     @Test
     void saveArticleTest() {
-        ResponseEntity<BaseResponse> res1 = saveArticle(1L, ArticleSaveRequest.builder()
-                                            .userId(1L)
-                                            .build());
+        Long articleId = 1L;
+        Long userId = 1L;
 
-        ResponseEntity<BaseResponse> res2 = saveArticle4xx(null, ArticleSaveRequest.builder()
-                .userId(1L)
-                .build());
+        ResponseEntity<BaseResponse> res1 = saveArticle(articleId, userId);
+        ResponseEntity<BaseResponse> res2 = saveArticle4xx(null, userId);
+        ResponseEntity<BaseResponse> res3 = saveArticle4xx(articleId, null);
 
-        ResponseEntity<BaseResponse> res3 = saveArticle4xx(1L, ArticleSaveRequest.builder()
-                .userId(null)
-                .build());
-
-        assertThat(HttpStatus.OK).isEqualTo(res1.getStatusCode());
-        assertThat(HttpStatus.NOT_FOUND).isEqualTo(res2.getStatusCode());
-        assertThat(HttpStatus.BAD_REQUEST).isEqualTo(res3.getStatusCode());
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
-    ResponseEntity<BaseResponse> saveArticle(Long articleId, ArticleSaveRequest request) {
+    ResponseEntity<BaseResponse> saveArticle(Long articleId, Long userId) {
         return restClient.post()
-                .uri("/article/{articleId}/save",articleId)
-                .body(request)
+                .uri("/article/{articleId}/user/{userId}/save",articleId, userId)
                 .retrieve()
                 .toEntity(BaseResponse.class);
     }
-    ResponseEntity<BaseResponse> saveArticle4xx(Long articleId, ArticleSaveRequest request) {
+    ResponseEntity<BaseResponse> saveArticle4xx(Long articleId,Long userId) {
         return restClient.post()
-                .uri("/article/{articleId}/save",articleId)
-                .body(request)
+                .uri("/article/{articleId}/user/{userId}/save",articleId, userId)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
                 .toEntity(BaseResponse.class);
     }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    static class ArticleSaveRequest {
-        private Long userId;
-    }
-
 }
