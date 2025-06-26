@@ -81,9 +81,9 @@ public class ArticleController {
                 ));
     }
 
-    @PostMapping("/article/{articleId}/save")
+    @PostMapping("/article/{articleId}/user/{userId}/save")
     public ResponseEntity<BaseResponse> saveArticle(@PathVariable("articleId") Long articleId,
-                                                    @RequestBody @Valid ArticleSaveRequest request) throws Exception{
+                                                    @PathVariable("userId") Long userId) throws Exception{
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(BaseResponse.from(
