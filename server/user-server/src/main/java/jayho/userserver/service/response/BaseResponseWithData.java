@@ -6,11 +6,11 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class BaseResponseWithData extends BaseResponse{
+public class BaseResponseWithData<T> extends BaseResponse{
 
-    protected Object data;
+    protected T data;
 
-    public static BaseResponseWithData from(int status, String message, Object data) {
+    public static <T> BaseResponseWithData<T> from(int status, String message, T data) {
         BaseResponseWithData response = new BaseResponseWithData();
         response.status = status;
         response.message = message;
