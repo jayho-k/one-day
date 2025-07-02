@@ -12,6 +12,8 @@ public class ViewController {
     @PostMapping("/view-count/article/{articleId}/user/{userId}")
     public ResponseEntity<BaseResponse> increaseViewCount(@PathVariable("articleId") Long articleId,
                                                           @PathVariable("userId") Long userId) {
+        // new ApiException(NOT_FOUND_ARTICLE);
+        // new NotFountArticleException();
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(BaseResponse.from(200)
