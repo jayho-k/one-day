@@ -1,8 +1,6 @@
 package jayho.userserver.controller;
 
-import jayho.userserver.service.request.LikeRequest;
 import jayho.userserver.service.response.BaseResponse;
-import jayho.userserver.service.response.BaseResponseWithData;
 import jayho.userserver.service.response.LikeCountResponseData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,12 +32,11 @@ public class LikeController {
     }
 
     @GetMapping("/article-likes/article/{articleId}/count")
-    public ResponseEntity<BaseResponseWithData> getLikeCount(@PathVariable Long articleId) {
+    public ResponseEntity<BaseResponse> getLikeCount(@PathVariable Long articleId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(BaseResponseWithData.from(
+                .body(BaseResponse.from(
                         200,
-                        "좋아요 개수 조회에 성공했습니다.",
                         LikeCountResponseData.from(articleId)
                 ));
     }
