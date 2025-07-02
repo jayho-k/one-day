@@ -9,6 +9,7 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter
+@AllArgsConstructor
 public class ArticleCreateRequest {
 
     @NotNull

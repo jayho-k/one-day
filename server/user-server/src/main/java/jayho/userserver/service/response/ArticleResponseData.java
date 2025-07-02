@@ -1,5 +1,7 @@
 package jayho.userserver.service.response;
 
+import jayho.userserver.entity.Article;
+import jayho.userserver.entity.User;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -18,16 +20,17 @@ public class ArticleResponseData {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 
-    public static ArticleResponseData from(Long articleId) {
-        ArticleResponseData article = new ArticleResponseData();
-        article.articleId = articleId;
-        article.images = List.of("image1.png","image2.png","image3.png");
-        article.content = "content";
-        article.writerId = articleId;
-        article.writerName = "jayho";
-        article.writerProfileImage = "image1.png";
-        article.createdAt = LocalDateTime.now();
-        article.modifiedAt = LocalDateTime.now();
-        return article;
+
+    public static ArticleResponseData from(Article article, User user) {
+        ArticleResponseData data = new ArticleResponseData();
+        data.articleId = article.getArticleId();
+        data.images = article.getImages();
+        data.content = article.getContent();
+        data.writerId = user.getUserId();
+        data.writerName = user.getUserName();
+        data.writerProfileImage = user.getUserProfileImage();
+        data.createdAt = article.getCreatedAt();
+        data.modifiedAt = article.getModifiedAt();
+        return data;
     }
 }
