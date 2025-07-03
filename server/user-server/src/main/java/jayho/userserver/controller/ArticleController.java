@@ -39,7 +39,7 @@ public class ArticleController {
                 );
     }
 
-    @GetMapping("/article")
+    @GetMapping("/article-all")
     public ResponseEntity<BaseResponse<List<ArticleResponseData>>> readAllArticle(@RequestParam("pageSize") Integer pageSize,
                                                                                   @RequestParam(value = "lastArticleId", required = false) Long lastArticleId){
         return ResponseEntity
@@ -50,7 +50,7 @@ public class ArticleController {
     }
 
     @PutMapping("/article")
-    public ResponseEntity<BaseResponse<ArticleResponseData>> updateArticle(@RequestBody ArticleUpdateRequest request) {
+    public ResponseEntity<BaseResponse<ArticleResponseData>> updateArticle(@RequestBody @Valid ArticleUpdateRequest request) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(BaseResponse.from(

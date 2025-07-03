@@ -1,5 +1,7 @@
 package jayho.userserver.api;
 
+
+import jayho.userserver.data.DataInitialize;
 import jayho.userserver.service.response.BaseResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +10,7 @@ import lombok.Getter;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
@@ -23,13 +26,19 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 public class ArticleTest {
 
+
     @LocalServerPort
     int port;
     RestClient restClient;
 
+    @Autowired
+    DataInitialize dataInitialize;
+
     @BeforeEach
     void setUp() {
         restClient = RestClient.create(String.format("http://localhost:%s",port));
+        dataInitialize.clearArticle();
+        dataInitialize.initArticle();
     }
 
     @Test
@@ -128,19 +137,19 @@ public class ArticleTest {
 
     ResponseEntity<BaseResponse> readAllArticle(Integer pageSize, Long lastArticleId) {
         return restClient.get()
-                .uri("/article?pageSize={pageSize}&lastArticleId={lastArticleId}", pageSize, lastArticleId)
+                .uri("/article-all?pageSize={pageSize}&lastArticleId={lastArticleId}", pageSize, lastArticleId)
                 .retrieve()
                 .toEntity(BaseResponse.class);
     }
     ResponseEntity<BaseResponse> readAllArticleFirstPage(Integer pageSize, Long lastArticleId) {
         return restClient.get()
-                .uri("/article?pageSize={pageSize}", pageSize)
+                .uri("/article-all?pageSize={pageSize}", pageSize)
                 .retrieve()
                 .toEntity(BaseResponse.class);
     }
     ResponseEntity<BaseResponse> readAllArticleFirstPage4xx(Integer pageSize, Long lastArticleId) {
         return restClient.get()
-                .uri("/article?pageSize={pageSize}", pageSize)
+                .uri("/article-all?pageSize={pageSize}", pageSize)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {})
                 .toEntity(BaseResponse.class);
@@ -149,25 +158,45 @@ public class ArticleTest {
 
     @Test
     void updateArticleTest(){
-        ResponseEntity<BaseResponse> res1 = updateArticle(1L);
-        ResponseEntity<BaseResponse> res2 = updateArticle4xx(null);
+        ResponseEntity<BaseResponse> res1 = updateArticle(ArticleUpdateRequest.builder()
+                .articleId(1L)
+                .images(List.of("image1.png"))
+                .content("content1")
+                .build());
+
+        ResponseEntity<BaseResponse> res2 = updateArticle4xx(ArticleUpdateRequest.builder()
+                .articleId(null)
+                .images(List.of("image1.png"))
+                .content("content123")
+                .build());
 
         assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    ResponseEntity<BaseResponse> updateArticle(Long articleId) {
-        return restClient.patch()
-                .uri("/article/{articleId}", articleId)
+    ResponseEntity<BaseResponse> updateArticle(ArticleUpdateRequest request) {
+        return restClient.put()
+                .uri("/article")
+                .body(request)
                 .retrieve()
                 .toEntity(BaseResponse.class);
     }
-    ResponseEntity<BaseResponse> updateArticle4xx(Long articleId) {
-        return restClient.patch()
-                .uri("/article/{articleId}", articleId)
+    ResponseEntity<BaseResponse> updateArticle4xx(ArticleUpdateRequest request) {
+        return restClient.put()
+                .uri("/article")
+                .body(request)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
                 .toEntity(BaseResponse.class);
+    }
+
+    @Getter
+    @Builder
+    @AllArgsConstructor
+    static class ArticleUpdateRequest{
+        private Long articleId;
+        private List<String> images;
+        private String content;
     }
 
     @Test
@@ -180,13 +209,13 @@ public class ArticleTest {
     }
 
     ResponseEntity<BaseResponse> tempDeleteArticle(Long articleId) {
-        return restClient.patch()
+        return restClient.put()
                 .uri("/article/temp-delete/{articleId}", articleId)
                 .retrieve()
                 .toEntity(BaseResponse.class);
     }
     ResponseEntity<BaseResponse> tempDeleteArticle4xx(Long articleId) {
-        return restClient.patch()
+        return restClient.put()
                 .uri("/article/temp-delete/{articleId}", articleId)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
