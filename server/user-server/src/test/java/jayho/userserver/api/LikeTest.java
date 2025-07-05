@@ -1,7 +1,6 @@
 package jayho.userserver.api;
 
 import jayho.userserver.service.response.BaseResponse;
-import jayho.userserver.service.response.BaseResponseWithData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -97,18 +96,18 @@ public class LikeTest {
     void getLikeCountTest() {
         Long articleId = 1L;
 
-        ResponseEntity<BaseResponseWithData> res1 = getLikeCount(articleId);
+        ResponseEntity<BaseResponse> res1 = getLikeCount(articleId);
         ResponseEntity<BaseResponse> res2 = getLikeCount4xx(null);
 
         assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
-    ResponseEntity<BaseResponseWithData> getLikeCount(Long articleId) {
+    ResponseEntity<BaseResponse> getLikeCount(Long articleId) {
         return restClient.get()
                 .uri("/article-likes/article/{articleId}/count", articleId)
                 .retrieve()
-                .toEntity(BaseResponseWithData.class);
+                .toEntity(BaseResponse.class);
     }
 
     ResponseEntity<BaseResponse> getLikeCount4xx(Long articleId) {

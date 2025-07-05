@@ -1,10 +1,6 @@
 package jayho.userserver.controller;
 
-import jakarta.validation.Valid;
-import jayho.userserver.service.request.ArticleCreateRequest;
-import jayho.userserver.service.response.ArticleResponseData;
 import jayho.userserver.service.response.BaseResponse;
-import jayho.userserver.service.response.BaseResponseWithData;
 import jayho.userserver.service.response.ViewResponseData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,19 +16,16 @@ public class ViewController {
         // new NotFountArticleException();
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(BaseResponse.from(
-                        200,
-                        "해당 게시글의 조회수가 증가했습니다.")
+                .body(BaseResponse.from(200)
                 );
     }
 
     @GetMapping("/view-count/article/{articleId}")
-    public ResponseEntity<BaseResponseWithData> readViewCount(@PathVariable Long articleId) {
+    public ResponseEntity<BaseResponse> readViewCount(@PathVariable Long articleId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(BaseResponseWithData.from(
+                .body(BaseResponse.from(
                         200,
-                        "해당 게시글의 조회수가 조회 되었습니다.",
                         ViewResponseData.from())
                 );
     }

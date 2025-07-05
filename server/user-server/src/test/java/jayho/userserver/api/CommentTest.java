@@ -1,7 +1,6 @@
 package jayho.userserver.api;
 
 import jayho.userserver.service.response.BaseResponse;
-import jayho.userserver.service.response.BaseResponseWithData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -92,10 +91,10 @@ public class CommentTest {
         Long lastCommentId = 1L;
         Integer pageSize = 10;
 
-        ResponseEntity<BaseResponseWithData> res1 = readAllScroll(articleId, lastCommentId, pageSize);
-        ResponseEntity<BaseResponseWithData> res2 = readAllScroll4xx(null, lastCommentId, pageSize);
-        ResponseEntity<BaseResponseWithData> res3 = readAllScroll4xx(articleId, null, pageSize);
-        ResponseEntity<BaseResponseWithData> res4 = readAllScroll4xx(articleId, lastCommentId, null);
+        ResponseEntity<BaseResponse> res1 = readAllScroll(articleId, lastCommentId, pageSize);
+        ResponseEntity<BaseResponse> res2 = readAllScroll4xx(null, lastCommentId, pageSize);
+        ResponseEntity<BaseResponse> res3 = readAllScroll4xx(articleId, null, pageSize);
+        ResponseEntity<BaseResponse> res4 = readAllScroll4xx(articleId, lastCommentId, null);
 
         assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -103,18 +102,18 @@ public class CommentTest {
         assertThat(res4.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    ResponseEntity<BaseResponseWithData> readAllScroll(Long articleId, Long lastCommentId, Integer pageSize) {
+    ResponseEntity<BaseResponse> readAllScroll(Long articleId, Long lastCommentId, Integer pageSize) {
         return restClient.get()
                 .uri("/comment/scroll?articleId={articleId}&lastCommentId={lastCommentId}&pageSize={pageSize}", articleId, lastCommentId, pageSize)
                 .retrieve()
-                .toEntity(BaseResponseWithData.class);
+                .toEntity(BaseResponse.class);
     }
-    ResponseEntity<BaseResponseWithData> readAllScroll4xx(Long articleId, Long lastCommentId, Integer pageSize) {
+    ResponseEntity<BaseResponse> readAllScroll4xx(Long articleId, Long lastCommentId, Integer pageSize) {
         return restClient.get()
                 .uri("/comment/scroll?articleId={articleId}&lastCommentId={lastCommentId}&pageSize={pageSize}", articleId, lastCommentId, pageSize)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
-                .toEntity(BaseResponseWithData.class);
+                .toEntity(BaseResponse.class);
     }
 
 
@@ -125,28 +124,28 @@ public class CommentTest {
         String content = "content";
         Long writerId = 1L;
 
-        ResponseEntity<BaseResponseWithData> res1 = updateComment(commentId, CommentUpdateRequest.builder()
+        ResponseEntity<BaseResponse> res1 = updateComment(commentId, CommentUpdateRequest.builder()
                 .articleId(articleId)
                 .content(content)
                 .writerId(writerId)
                 .build()
         );
 
-        ResponseEntity<BaseResponseWithData> res2 = updateComment4xx(null, CommentUpdateRequest.builder()
+        ResponseEntity<BaseResponse> res2 = updateComment4xx(null, CommentUpdateRequest.builder()
                 .articleId(articleId)
                 .content(content)
                 .writerId(writerId)
                 .build()
         );
 
-        ResponseEntity<BaseResponseWithData> res3 = updateComment4xx(commentId, CommentUpdateRequest.builder()
+        ResponseEntity<BaseResponse> res3 = updateComment4xx(commentId, CommentUpdateRequest.builder()
                 .articleId(null)
                 .content(content)
                 .writerId(writerId)
                 .build()
         );
 
-        ResponseEntity<BaseResponseWithData> res4 = updateComment4xx(commentId, CommentUpdateRequest.builder()
+        ResponseEntity<BaseResponse> res4 = updateComment4xx(commentId, CommentUpdateRequest.builder()
                 .articleId(articleId)
                 .content(content)
                 .writerId(null)
@@ -159,20 +158,20 @@ public class CommentTest {
         assertThat(res4.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
-    ResponseEntity<BaseResponseWithData> updateComment(Long commentId, CommentUpdateRequest request) {
+    ResponseEntity<BaseResponse> updateComment(Long commentId, CommentUpdateRequest request) {
         return restClient.patch()
                 .uri("/comment/{commentId}", commentId)
                 .body(request)
                 .retrieve()
-                .toEntity(BaseResponseWithData.class);
+                .toEntity(BaseResponse.class);
     }
-    ResponseEntity<BaseResponseWithData> updateComment4xx(Long commentId, CommentUpdateRequest request) {
+    ResponseEntity<BaseResponse> updateComment4xx(Long commentId, CommentUpdateRequest request) {
         return restClient.patch()
                 .uri("/comment/{commentId}", commentId)
                 .body(request)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
-                .toEntity(BaseResponseWithData.class);
+                .toEntity(BaseResponse.class);
     }
 
     @Getter
@@ -188,26 +187,26 @@ public class CommentTest {
     void deleteCommentTest() {
         Long commentId = 1L;
 
-        ResponseEntity<BaseResponseWithData> res1 = deleteComment(commentId);
-        ResponseEntity<BaseResponseWithData> res2 = deleteComment4xx(null);
+        ResponseEntity<BaseResponse> res1 = deleteComment(commentId);
+        ResponseEntity<BaseResponse> res2 = deleteComment4xx(null);
 
         Assertions.assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
         Assertions.assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
-    ResponseEntity<BaseResponseWithData> deleteComment(Long commentId) {
+    ResponseEntity<BaseResponse> deleteComment(Long commentId) {
         return restClient.delete()
                 .uri("/comment/{commentId}", commentId)
                 .retrieve()
-                .toEntity(BaseResponseWithData.class);
+                .toEntity(BaseResponse.class);
     }
 
-    ResponseEntity<BaseResponseWithData> deleteComment4xx(Long commentId) {
+    ResponseEntity<BaseResponse> deleteComment4xx(Long commentId) {
         return restClient.delete()
                 .uri("/comment/{commentId}", commentId)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
-                .toEntity(BaseResponseWithData.class);
+                .toEntity(BaseResponse.class);
     }
 
 }

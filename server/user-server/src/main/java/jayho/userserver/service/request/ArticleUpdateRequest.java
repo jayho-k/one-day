@@ -1,22 +1,21 @@
 package jayho.userserver.service.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class ArticleCreateRequest {
+public class ArticleUpdateRequest {
 
     @NotNull
+    private Long articleId;
     private List<String> images;
-    private String content;
 
     @NotNull
-    private Long writerId;
+    private String content;
 
 }

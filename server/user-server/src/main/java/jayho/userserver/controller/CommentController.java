@@ -1,11 +1,12 @@
 package jayho.userserver.controller;
 
 import jakarta.validation.Valid;
+import jayho.userserver.service.CommentService;
 import jayho.userserver.service.request.CommentCreateRequest;
 import jayho.userserver.service.request.CommentUpdateRequest;
 import jayho.userserver.service.response.BaseResponse;
-import jayho.userserver.service.response.BaseResponseWithData;
 import jayho.userserver.service.response.CommentResponseData;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +14,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 public class CommentController {
+
+    private final CommentService commentService;
 
     @PostMapping("/comment")
     public ResponseEntity<BaseResponse> createComment(@RequestBody @Valid CommentCreateRequest request) {
+        commentService.createComment(request);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(BaseResponse.from(
@@ -26,21 +32,14 @@ public class CommentController {
     }
 
     @GetMapping("/comment/scroll")
-    public ResponseEntity<BaseResponseWithData> readAllScroll(@RequestParam("articleId") Long articleId,
+    public ResponseEntity<BaseResponse> readAllScroll(@RequestParam("articleId") Long articleId,
                                                                @RequestParam("lastCommentId") Long lastCommentId,
                                                                @RequestParam("pageSize") Integer pageSize) {
-        List<CommentResponseData> data = List.of(
-                CommentResponseData.from(1L),
-                CommentResponseData.from(2L),
-                CommentResponseData.from(3L));
-
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(BaseResponseWithData.from(
+                .body(BaseResponse.from(
                         200,
-                        "댓글 조회에 성공했습니다.",
-                        data
-                ));
+                        commentService.readAllScroll(articleId, lastCommentId, pageSize)));
     }
 
     @PatchMapping("/comment/{commentId}")

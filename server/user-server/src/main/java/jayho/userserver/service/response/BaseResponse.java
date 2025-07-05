@@ -1,5 +1,7 @@
 package jayho.userserver.service.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.*;
 
 @Getter
@@ -7,15 +9,24 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class BaseResponse {
+public class BaseResponse<T> {
 
-    protected int status;
-    protected String message;
+    private int status;
 
-    public static BaseResponse from(int status, String message){
-        BaseResponse response = new BaseResponse();
+    @JsonInclude(Include.NON_NULL)
+    private T data;
+
+
+    public static <T> BaseResponse<T> from(int status){
+        BaseResponse<T> response = new BaseResponse<>();
         response.status = status;
-        response.message = message;
+        return response;
+    }
+
+    public static <T> BaseResponse<T> from(int status, T data){
+        BaseResponse<T> response = new BaseResponse<>();
+        response.status = status;
+        response.data = data;
         return response;
     }
 

@@ -1,5 +1,7 @@
 package jayho.userserver.service.response;
 
+import jayho.userserver.entity.Comment;
+import jayho.userserver.entity.User;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -14,15 +16,15 @@ public class CommentResponseData {
     private String writerProfileImage;
     private Long articleId;
 
-    public static CommentResponseData from(Long commentId) {
+    public static CommentResponseData from(Comment comment, User writer) {
 
         CommentResponseData response = new CommentResponseData();
-        response.commentId = commentId;
-        response.content = "content";
-        response.writerId = 1L;
-        response.writerName = "writer";
-        response.writerProfileImage = "image.png";
-        response.articleId = 1L;
+        response.commentId = comment.getCommentId();
+        response.content = comment.getContent();
+        response.writerId = comment.getWriterId();
+        response.writerName = writer.getUserName();
+        response.writerProfileImage = writer.getUserProfileImage();
+        response.articleId = comment.getArticleId();
 
         return response;
     }

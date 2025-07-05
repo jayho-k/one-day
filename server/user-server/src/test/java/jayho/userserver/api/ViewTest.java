@@ -1,13 +1,7 @@
 package jayho.userserver.api;
 
 import jayho.userserver.service.response.BaseResponse;
-import jayho.userserver.service.response.BaseResponseWithData;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -16,9 +10,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -64,8 +55,8 @@ public class ViewTest {
     @Test
     void readViewCountTest() {
         Long articleId = 1L;
-        ResponseEntity<BaseResponseWithData> res1 = readViewCount(articleId);
-        ResponseEntity<BaseResponseWithData> res2 = readViewCount4xx(null);
+        ResponseEntity<BaseResponse> res1 = readViewCount(articleId);
+        ResponseEntity<BaseResponse> res2 = readViewCount4xx(null);
 
         System.out.println(res1.getBody());
         assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -73,19 +64,19 @@ public class ViewTest {
         System.out.println(res2.getBody());
         assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
-    ResponseEntity<BaseResponseWithData> readViewCount(Long articleId){
+    ResponseEntity<BaseResponse> readViewCount(Long articleId){
         return restClient.get()
                 .uri("/view-count/article/{articleId}", articleId)
                 .retrieve()
-                .toEntity(BaseResponseWithData.class);
+                .toEntity(BaseResponse.class);
 
     }
-    ResponseEntity<BaseResponseWithData> readViewCount4xx(Long articleId){
+    ResponseEntity<BaseResponse> readViewCount4xx(Long articleId){
         return restClient.get()
                 .uri("/view-count/article/{articleId}", articleId)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
-                .toEntity(BaseResponseWithData.class);
+                .toEntity(BaseResponse.class);
 
     }
 
