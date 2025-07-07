@@ -1,7 +1,6 @@
 package jayho.userserver.repository;
 
 import jayho.userserver.entity.Article;
-import jayho.userserver.entity.User;
 import jayho.userserver.service.response.ArticleResponseData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -51,17 +50,11 @@ public class ArticleRepositoryImpl implements ArticleRepository {
 
     @Override
     public List<ArticleResponseData> findArticleResponseAll(Integer pageSize,  Long lastArticleId) {
-        List<Article> articleList = new ArrayList<>();
         if (lastArticleId == null) {
-            return repository.values().stream().limit(pageSize)
-                    .map(article ->
-                            ArticleResponseData.from(
-                                    article, userRepository.findById(article.getWriterId()).orElseThrow()
-                            )
-                    ).toList();
+            lastArticleId = 0L;
         }
         return repository.subMap(lastArticleId, lastArticleId + Long.valueOf(pageSize))
-                .values().stream().limit(pageSize)
+                .values().stream()
                 .map(article ->
                         ArticleResponseData.from(
                                 article, userRepository.findById(article.getWriterId()).orElseThrow()
@@ -69,10 +62,8 @@ public class ArticleRepositoryImpl implements ArticleRepository {
                 ).toList();
     }
 
-
     @Override
-    public void deleteById(Long articleId) {
-        repository.remove(articleId);
+    public Optional<Article> deleteById(Long articleId) {
+        return Optional.of(repository.remove(articleId));
     }
-
 }

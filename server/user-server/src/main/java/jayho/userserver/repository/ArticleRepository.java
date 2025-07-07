@@ -14,6 +14,6 @@ public interface ArticleRepository {
     ArticleResponseData findArticleResponseById(Long articleId);
     List<Article> findAll();
     List<ArticleResponseData> findArticleResponseAll(Integer pageSize,  Long lastArticleId);
-    void deleteById(Long articleId);
+    Optional<Article> deleteById(Long articleId);
 
 }
