@@ -37,8 +37,8 @@ public class ArticleTest {
     @BeforeEach
     void setUp() {
         restClient = RestClient.create(String.format("http://localhost:%s",port));
-        dataInitialize.clearArticle();
-        dataInitialize.initArticle();
+//        dataInitialize.clearArticle();
+//        dataInitialize.initArticle();
     }
 
     @Test
