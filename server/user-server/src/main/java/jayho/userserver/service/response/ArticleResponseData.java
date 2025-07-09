@@ -1,7 +1,7 @@
 package jayho.userserver.service.response;
 
-import jayho.userserver.entity.Article;
-import jayho.userserver.entity.User;
+import jayho.useractiverdb.entity.Article;
+import jayho.useractiverdb.entity.User;
 import lombok.*;
 
 import java.time.LocalDateTime;
