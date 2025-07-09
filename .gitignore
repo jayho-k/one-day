@@ -15,3 +15,4 @@ out/
 
 /data/.env
 /data-resource
+/data/user-active-rdb/src/main/resources/.env
