@@ -47,8 +47,8 @@ public class CommentService {
         return CommentResponseData.from(updateComment, user);
     }
 
-    public void deleteComment(Long commentId) {
+    public Long deleteComment(Long commentId) {
         commentRepository.deleteById(commentId);
-
+        return commentId;
     }
 }

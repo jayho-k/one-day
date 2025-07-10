@@ -163,7 +163,7 @@ public class ArticleServiceTest {
         Long userId = 1L;
 
         // when
-        articleService.saveArticle(articleId, userId);
+        articleService.saveCollectArticle(articleId, userId);
 
         // then
         verify(savedArticleRepository).save(any(SavedArticle.class));

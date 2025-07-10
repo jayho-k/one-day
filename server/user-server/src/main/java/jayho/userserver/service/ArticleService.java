@@ -63,12 +63,13 @@ public class ArticleService {
         return articleRepository.save(article);
     }
 
-    public void deleteArticle(Long articleId) {
+    public Long deleteArticle(Long articleId) {
         articleRepository.deleteById(articleId);
+        return articleId;
     }
 
-    public void saveArticle(Long articleId, Long userId) {
-        savedArticleRepository.save(
+    public SavedArticle saveCollectArticle(Long articleId, Long userId) {
+        return savedArticleRepository.save(
                 SavedArticle.create(snowflake.nextId(), articleId, userId)
         );
     }
