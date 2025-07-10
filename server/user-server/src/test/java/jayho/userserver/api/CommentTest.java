@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -29,6 +30,7 @@ public class CommentTest {
         restClient = RestClient.create(String.format("http://localhost:%s",port));
     }
 
+    @DisplayName("댓글 생성 성공 테스트")
     @Test
     void createCommentTest() {
         Long articleId = 1L;
@@ -41,20 +43,37 @@ public class CommentTest {
                 .writerId(writerId)
                 .build());
 
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
+
+    @DisplayName("댓글 생성 시 articleId null BAD_REQUEST 테스트")
+    @Test
+    void createComment_articleIdNullTest() {
+        Long articleId = 1L;
+        String content = "content";
+        Long writerId = 1L;
+
         ResponseEntity<BaseResponse> res2 = createComment4xx(CommentCreateRequest.builder()
                 .articleId(null)
                 .content(content)
                 .writerId(writerId)
                 .build());
 
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @DisplayName("댓글 생성 시 content null BAD_REQUEST 테스트")
+    @Test
+    void createComment_writerIdNullTest() {
+        Long articleId = 1L;
+        String content = "content";
+        Long writerId = 1L;
+
         ResponseEntity<BaseResponse> res3 = createComment4xx(CommentCreateRequest.builder()
                 .articleId(articleId)
                 .content(content)
                 .writerId(null)
                 .build());
-
-        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
@@ -116,7 +135,7 @@ public class CommentTest {
                 .toEntity(BaseResponse.class);
     }
 
-
+    @DisplayName("댓글 수정 성공 테스트")
     @Test
     void updateCommentTest(){
         Long commentId = 1L;
@@ -130,6 +149,16 @@ public class CommentTest {
                 .writerId(writerId)
                 .build()
         );
+        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @DisplayName("댓글 수정 시 commentId null NOT_FOUND 테스트")
+    @Test
+    void updateComment_commentIdNullTest(){
+        Long commentId = 1L;
+        Long articleId = 1L;
+        String content = "content";
+        Long writerId = 1L;
 
         ResponseEntity<BaseResponse> res2 = updateComment4xx(null, CommentUpdateRequest.builder()
                 .articleId(articleId)
@@ -137,6 +166,17 @@ public class CommentTest {
                 .writerId(writerId)
                 .build()
         );
+        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @DisplayName("댓글 수정 시 articleId null BAD_REQUEST 테스트")
+    @Test
+    void updateComment_articleIdNullTest(){
+        Long commentId = 1L;
+        Long articleId = 1L;
+        String content = "content";
+        Long writerId = 1L;
+
 
         ResponseEntity<BaseResponse> res3 = updateComment4xx(commentId, CommentUpdateRequest.builder()
                 .articleId(null)
@@ -144,6 +184,16 @@ public class CommentTest {
                 .writerId(writerId)
                 .build()
         );
+        assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @DisplayName("댓글 수정 시 writerId null BAD_REQUEST 테스트")
+    @Test
+    void updateComment_writerIdNullTest(){
+        Long commentId = 1L;
+        Long articleId = 1L;
+        String content = "content";
+        Long writerId = 1L;
 
         ResponseEntity<BaseResponse> res4 = updateComment4xx(commentId, CommentUpdateRequest.builder()
                 .articleId(articleId)
@@ -151,10 +201,6 @@ public class CommentTest {
                 .writerId(null)
                 .build()
         );
-
-        assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(res4.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
@@ -183,16 +229,23 @@ public class CommentTest {
         private Long writerId;
     }
 
+    @DisplayName("댓글 삭제 성공 테스트")
     @Test
     void deleteCommentTest() {
         Long commentId = 1L;
-
         ResponseEntity<BaseResponse> res1 = deleteComment(commentId);
-        ResponseEntity<BaseResponse> res2 = deleteComment4xx(null);
-
         Assertions.assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @DisplayName("댓글 삭제 시 commentId null NOT_FOUND 테스트")
+    @Test
+    void deleteComment_commentIdNullTest() {
+        Long commentId = 1L;
+
+        ResponseEntity<BaseResponse> res2 = deleteComment4xx(null);
         Assertions.assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
+
 
     ResponseEntity<BaseResponse> deleteComment(Long commentId) {
         return restClient.delete()
