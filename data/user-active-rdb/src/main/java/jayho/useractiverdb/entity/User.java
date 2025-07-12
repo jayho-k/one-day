@@ -1,12 +1,18 @@
-package jayho.userserver.entity;
+package jayho.useractiverdb.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Entity
 @Getter
+@Table(name = "\"user\"")
 @NoArgsConstructor
 public class User {
 
+    @Id
     private Long userId;
     private String userName;
     private String userProfileImage;

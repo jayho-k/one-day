@@ -1,7 +1,8 @@
 package jayho.userserver.service.response;
 
-import jayho.userserver.entity.Comment;
-import jayho.userserver.entity.User;
+
+import jayho.useractiverdb.entity.Comment;
+import jayho.useractiverdb.entity.User;
 import lombok.Getter;
 import lombok.ToString;
 

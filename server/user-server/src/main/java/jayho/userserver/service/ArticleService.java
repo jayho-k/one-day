@@ -1,11 +1,12 @@
 package jayho.userserver.service;
 
-import jayho.userserver.entity.Article;
-import jayho.userserver.entity.SavedArticle;
-import jayho.userserver.entity.User;
-import jayho.userserver.repository.ArticleRepository;
-import jayho.userserver.repository.SavedArticleRepository;
-import jayho.userserver.repository.UserRepository;
+import jayho.common.snowflake.Snowflake;
+import jayho.useractiverdb.entity.Article;
+import jayho.useractiverdb.entity.SavedArticle;
+import jayho.useractiverdb.entity.User;
+import jayho.useractiverdb.repository.ArticleRepository;
+import jayho.useractiverdb.repository.SavedArticleRepository;
+import jayho.useractiverdb.repository.UserRepository;
 import jayho.userserver.service.request.ArticleCreateRequest;
 import jayho.userserver.service.request.ArticleUpdateRequest;
 import jayho.userserver.service.response.ArticleResponseData;
@@ -21,9 +22,12 @@ public class ArticleService {
 
     private final ArticleRepository articleRepository;
     private final SavedArticleRepository savedArticleRepository;
+    private final UserRepository userRepository;
+    private final Snowflake snowflake = new Snowflake();
 
-    public void createArticle(ArticleCreateRequest articleInfo) {
-        articleRepository.save(Article.create(
+    public Article createArticle(ArticleCreateRequest articleInfo) {
+        return articleRepository.save(Article.create(
+                snowflake.nextId(),
                 articleInfo.getImages(),
                 articleInfo.getContent(),
                 articleInfo.getWriterId()
@@ -31,33 +35,42 @@ public class ArticleService {
     }
 
     public ArticleResponseData readArticle(Long articleId) {
-        return articleRepository.findArticleResponseById(articleId);
+        Article article = articleRepository.findById(articleId).orElseThrow();
+        User user = userRepository.findById(article.getWriterId()).orElseThrow();
+        return ArticleResponseData.from(article, user);
     }
 
     public List<ArticleResponseData> readAllArticle(Integer pageSize, Long lastArticleId) {
-        return articleRepository.findArticleResponseAll(pageSize, lastArticleId);
+//        return articleRepository.findArticleResponseAll(pageSize, lastArticleId);
+        return List.of();
     }
 
     public ArticleResponseData updateArticle(ArticleUpdateRequest articleInfo) {
+
         Article article = articleRepository.findById(articleInfo.getArticleId()).orElseThrow();
-        article.update(articleInfo.getImages(), articleInfo.getContent());
-        articleRepository.save(article).orElseThrow();
-        return articleRepository.findArticleResponseById(article.getArticleId());
+        article.setImages(articleInfo.getImages());
+        article.setContent(articleInfo.getContent());
+
+        Article updatedArticle = articleRepository.save(article);
+        User user = userRepository.findById(updatedArticle.getWriterId()).orElseThrow();
+
+        return ArticleResponseData.from(updatedArticle, user);
     }
 
-    public void tmpDeleteArticle(Long articleId) {
+    public Article tmpDeleteArticle(Long articleId) {
         Article article = articleRepository.findById(articleId).orElseThrow();
-        article.tmpDelete(true);
-        articleRepository.save(article).orElseThrow();
+        article.setIsDelete(true);
+        return articleRepository.save(article);
     }
 
-    public void deleteArticle(Long articleId) {
+    public Long deleteArticle(Long articleId) {
         articleRepository.deleteById(articleId);
+        return articleId;
     }
 
-    public void saveArticle(Long articleId, Long userId) {
-        savedArticleRepository.save(
-                SavedArticle.create(articleId, userId)
+    public SavedArticle saveCollectArticle(Long articleId, Long userId) {
+        return savedArticleRepository.save(
+                SavedArticle.create(snowflake.nextId(), articleId, userId)
         );
     }
 }

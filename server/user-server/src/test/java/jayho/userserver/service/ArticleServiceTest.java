@@ -1,11 +1,11 @@
 package jayho.userserver.service;
 
-import jayho.userserver.entity.Article;
-import jayho.userserver.entity.SavedArticle;
-import jayho.userserver.entity.User;
-import jayho.userserver.repository.ArticleRepository;
-import jayho.userserver.repository.SavedArticleRepository;
-import jayho.userserver.repository.UserRepository;
+import jayho.useractiverdb.entity.Article;
+import jayho.useractiverdb.entity.SavedArticle;
+import jayho.useractiverdb.entity.User;
+import jayho.useractiverdb.repository.ArticleRepository;
+import jayho.useractiverdb.repository.SavedArticleRepository;
+import jayho.useractiverdb.repository.UserRepository;
 import jayho.userserver.service.request.ArticleCreateRequest;
 import jayho.userserver.service.request.ArticleUpdateRequest;
 import jayho.userserver.service.response.ArticleResponseData;
@@ -63,18 +63,30 @@ public class ArticleServiceTest {
         Article article = createArticle(articleId, images, content, writerId);
         User user = User.create(article.getWriterId(), "jayho", "profile.png");
         ArticleResponseData will = ArticleResponseData.from(article, user);
-        given(articleRepository.findArticleResponseById(articleId)).willReturn(will);
+
+        given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
+        given(userRepository.findById(article.getWriterId())).willReturn(Optional.of(user));
 
         // when
         ArticleResponseData response = articleService.readArticle(articleId);
 
         // then
-        assertThat(response).isEqualTo(will);
+        assertThat(response.getArticleId()).isEqualTo(will.getArticleId());
+        assertThat(response.getImages()).isEqualTo(will.getImages());
+        assertThat(response.getContent()).isEqualTo(will.getContent());
+        assertThat(response.getWriterId()).isEqualTo(will.getWriterId());
+        assertThat(response.getWriterProfileImage()).isEqualTo(will.getWriterProfileImage());
+    }
+
+    @Test
+    void readAllArticle() {
+
+
+
     }
 
     Article createArticle(Long articleId, List<String> images, String content, Long writerId) {
-        Article article = Article.create(images, content, writerId);
-        article.assignId(articleId);
+        Article article = Article.create(articleId,images, content, writerId);
         return article;
     }
 
@@ -86,25 +98,28 @@ public class ArticleServiceTest {
         Long articleId = 1L;
         Long writerId = 1L;
 
-        Article oldArticle = Article.create(List.of("oldImage.png"), "originContent", writerId);
-        oldArticle.assignId(articleId); // ID 할당
+        Article oldArticle = Article.create(articleId, List.of("oldImage.png"), "originContent", writerId);
 
-        Article newArticle = Article.create(List.of("newImage.png"), "newContent", writerId);
+        Article newArticle = Article.create(articleId, List.of("newImage.png"), "newContent", writerId);
         User user = User.create(writerId, "jayho", "profile.png");
-
-        newArticle.assignId(articleId); // ID 할당
 
         ArticleUpdateRequest request = new ArticleUpdateRequest(articleId, List.of("newImage.png"), "newContent");
         given(articleRepository.findById(articleId)).willReturn(Optional.of(oldArticle));
-        given(articleRepository.save(any(Article.class))).willReturn(Optional.of(oldArticle));
-        given(articleRepository.findArticleResponseById(request.getArticleId())).willReturn(ArticleResponseData.from(newArticle, user));
+        given(articleRepository.save(any(Article.class))).willReturn(newArticle);
+        given(userRepository.findById(writerId)).willReturn(Optional.of(user));
+
+        ArticleResponseData will = ArticleResponseData.from(newArticle, user);
 
         // when
         ArticleResponseData result = articleService.updateArticle(request);
 
         // then
         verify(articleRepository).save(any(Article.class));
-        assertThat(articleRepository.findArticleResponseById(articleId)).isEqualTo(result);
+        assertThat(will.getArticleId()).isEqualTo(result.getArticleId());
+        assertThat(will.getImages()).isEqualTo(result.getImages());
+        assertThat(will.getContent()).isEqualTo(result.getContent());
+        assertThat(will.getWriterId()).isEqualTo(result.getWriterId());
+        assertThat(will.getWriterProfileImage()).isEqualTo(result.getWriterProfileImage());
     }
 
 
@@ -115,11 +130,11 @@ public class ArticleServiceTest {
         Long articleId = 1L;
         Long writerId = 1L;
 
-        Article article = Article.create(List.of("image.png"), "content", writerId);
-        article.tmpDelete(true);
+        Article article = Article.create(articleId, List.of("image.png"), "content", writerId);
+        article.setIsDelete(true);
 
         given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
-        given(articleRepository.save(any(Article.class))).willReturn(Optional.of(article));
+        given(articleRepository.save(any(Article.class))).willReturn(article);
 
         // when
         articleService.tmpDeleteArticle(articleId);
@@ -148,7 +163,7 @@ public class ArticleServiceTest {
         Long userId = 1L;
 
         // when
-        articleService.saveArticle(articleId, userId);
+        articleService.saveCollectArticle(articleId, userId);
 
         // then
         verify(savedArticleRepository).save(any(SavedArticle.class));

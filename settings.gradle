@@ -4,8 +4,14 @@ plugins {
 
 rootProject.name = 'one-day'
 
-include(":server")
-include(':server:user-server')
+
+include('snowflake')
+project(':snowflake').projectDir = file('common/snowflake')
+
+include('user-server')
+project(':user-server').projectDir = file('server/user-server')
 
 include (':data')
-
+include (':data:user-active-rdb')
+include (':data:user-active-memory')
+include (':data:user-active-object')

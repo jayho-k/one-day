@@ -1,7 +1,8 @@
 package jayho.userserver.controller;
 
 import jakarta.validation.Valid;
-import jayho.userserver.repository.ArticleRepositoryImpl;
+import jayho.useractiverdb.entity.Article;
+import jayho.useractiverdb.entity.SavedArticle;
 import jayho.userserver.service.ArticleService;
 import jayho.userserver.service.request.ArticleCreateRequest;
 import jayho.userserver.service.request.ArticleUpdateRequest;
@@ -23,15 +24,16 @@ public class ArticleController {
     private final ArticleService articleService;
 
     @PostMapping("/article")
-    public ResponseEntity<BaseResponse> createArticle(@RequestBody @Valid ArticleCreateRequest request) {
-        articleService.createArticle(request);
+    public ResponseEntity<BaseResponse<Article>> createArticle(@RequestBody @Valid ArticleCreateRequest request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(BaseResponse.from(201));
+                .body(BaseResponse.from(
+                        201,
+                        articleService.createArticle(request)));
     }
 
     @GetMapping("/article/{articleId}")
-    public ResponseEntity<BaseResponse> readArticle(@PathVariable("articleId") Long articleId){
+    public ResponseEntity<BaseResponse<ArticleResponseData>> readArticle(@PathVariable("articleId") Long articleId){
         return ResponseEntity.status(HttpStatus.OK)
                 .body(BaseResponse.from(
                         200
@@ -60,16 +62,16 @@ public class ArticleController {
     }
 
     @PutMapping("/article/temp-delete/{articleId}")
-    public ResponseEntity<BaseResponse> tempDeleteArticle(@PathVariable("articleId") Long articleId){
-        articleService.tmpDeleteArticle(articleId);
+    public ResponseEntity<BaseResponse<Article>> tempDeleteArticle(@PathVariable("articleId") Long articleId){
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(BaseResponse.from(200));
+                .body(BaseResponse.from(
+                        200,
+                        articleService.tmpDeleteArticle(articleId)));
     }
 
     @DeleteMapping("/article/{articleId}")
-    public ResponseEntity<BaseResponse> deleteArticle(@PathVariable("articleId") Long articleId) throws Exception{
-
+    public ResponseEntity<BaseResponse<Long>> deleteArticle(@PathVariable("articleId") Long articleId) throws Exception{
         articleService.deleteArticle(articleId);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -77,13 +79,12 @@ public class ArticleController {
     }
 
     @PostMapping("/article/{articleId}/user/{userId}/save")
-    public ResponseEntity<BaseResponse> saveArticle(@PathVariable("articleId") Long articleId,
-                                                    @PathVariable("userId") Long userId) throws Exception{
-
-        articleService.saveArticle(articleId, userId);
-
+    public ResponseEntity<BaseResponse<SavedArticle>> saveCollectArticle(@PathVariable("articleId") Long articleId,
+                                                                         @PathVariable("userId") Long userId) throws Exception{
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(BaseResponse.from(200));
+                .body(BaseResponse.from(
+                        200,
+                        articleService.saveCollectArticle(articleId, userId)));
     }
 }

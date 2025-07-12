@@ -1,19 +1,16 @@
 package jayho.userserver.service;
 
-
-import jakarta.validation.Valid;
-import jayho.userserver.entity.Article;
-import jayho.userserver.entity.Comment;
-import jayho.userserver.repository.CommentRepository;
-import jayho.userserver.service.request.ArticleCreateRequest;
+import jayho.common.snowflake.Snowflake;
+import jayho.useractiverdb.entity.Comment;
+import jayho.useractiverdb.entity.User;
+import jayho.useractiverdb.repository.CommentRepository;
+import jayho.useractiverdb.repository.UserRepository;
 import jayho.userserver.service.request.CommentCreateRequest;
 import jayho.userserver.service.request.CommentUpdateRequest;
 import jayho.userserver.service.response.CommentResponseData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+
 
 import java.util.List;
 
@@ -22,10 +19,13 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final Snowflake snowflake = new Snowflake();
 
-    public void createComment(CommentCreateRequest commentInfo) {
-        commentRepository.save(
-                Comment.create(commentInfo.getContent(),
+    public Comment createComment(CommentCreateRequest commentInfo) {
+        return commentRepository.save(
+                Comment.create(snowflake.nextId(),
+                                commentInfo.getContent(),
                                 commentInfo.getWriterId(),
                                 commentInfo.getArticleId()
                 )
@@ -33,23 +33,22 @@ public class CommentService {
     }
 
     public List<CommentResponseData> readAllScroll(Long articleId, Long lastCommentId, Integer pageSize) {
-        return commentRepository.findCommentResponseByArticleId(articleId, lastCommentId, pageSize);
+//        return commentRepository.findCommentResponseByArticleId(articleId, lastCommentId, pageSize);
+        return List.of();
     }
 
-    public CommentResponseData updateComment(Long commentId,
-                              CommentUpdateRequest request) {
+    public CommentResponseData updateComment(Long commentId, CommentUpdateRequest commentInfo) {
+
         Comment comment = commentRepository.findById(commentId).orElseThrow();
-        comment.update(request.getContent());
-        commentRepository.save(comment);
-        return commentRepository.findCommentResponseById(commentId);
+        comment.setContent(commentInfo.getContent());
+
+        Comment updateComment = commentRepository.save(comment);
+        User user = userRepository.findById(updateComment.getWriterId()).orElseThrow();
+        return CommentResponseData.from(updateComment, user);
     }
 
-    public void deleteComment(Long commentId) {
+    public Long deleteComment(Long commentId) {
         commentRepository.deleteById(commentId);
-
+        return commentId;
     }
-
-
-
-
 }
