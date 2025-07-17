@@ -1,11 +1,8 @@
-package jayho.userserver.api;
+package jayho.oneday.api;
 
-import jayho.userserver.service.response.BaseResponse;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import jayho.oneday.service.response.BaseResponse;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
@@ -16,8 +13,9 @@ import org.springframework.web.client.RestClient;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+@TestMethodOrder(OrderAnnotation.class)
 @SpringBootTest(webEnvironment = RANDOM_PORT)
-public class LikeTest {
+public class ArticleLikeTest {
 
     @LocalServerPort
     int port;
@@ -29,6 +27,7 @@ public class LikeTest {
     }
 
     @Test
+    @Order(1)
     void createLikeTest() {
         Long articleId = 1L;
         Long userId = 1L;
@@ -55,14 +54,7 @@ public class LikeTest {
                 .toEntity(BaseResponse.class);
     }
 
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    static class LikeRequest {
-        Long userId;
-    }
-
-
+    @Order(2)
     @Test
     void deleteLikeTest()   {
         Long articleId = 1L;
@@ -92,8 +84,9 @@ public class LikeTest {
     }
 
 
+    @Order(3)
     @Test
-    void getLikeCountTest() {
+    void readLikeCountTest() {
         Long articleId = 1L;
 
         ResponseEntity<BaseResponse> res1 = getLikeCount(articleId);
