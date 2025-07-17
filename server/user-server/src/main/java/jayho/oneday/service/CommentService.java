@@ -1,20 +1,22 @@
-package jayho.userserver.service;
+package jayho.oneday.service;
 
 import jayho.common.snowflake.Snowflake;
-import jayho.useractiverdb.entity.Comment;
-import jayho.useractiverdb.entity.User;
-import jayho.useractiverdb.repository.CommentRepository;
-import jayho.useractiverdb.repository.UserRepository;
-import jayho.userserver.service.request.CommentCreateRequest;
-import jayho.userserver.service.request.CommentUpdateRequest;
-import jayho.userserver.service.response.CommentResponseData;
+import jayho.oneday.entity.Comment;
+import jayho.oneday.entity.User;
+import jayho.oneday.repository.CommentRepository;
+import jayho.oneday.repository.UserRepository;
+import jayho.oneday.service.request.CommentCreateRequest;
+import jayho.oneday.service.request.CommentUpdateRequest;
+import jayho.oneday.service.response.CommentResponseData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CommentService {
 
@@ -22,6 +24,7 @@ public class CommentService {
     private final UserRepository userRepository;
     private final Snowflake snowflake = new Snowflake();
 
+    @Transactional
     public Comment createComment(CommentCreateRequest commentInfo) {
         return commentRepository.save(
                 Comment.create(snowflake.nextId(),
@@ -37,6 +40,7 @@ public class CommentService {
         return List.of();
     }
 
+    @Transactional
     public CommentResponseData updateComment(Long commentId, CommentUpdateRequest commentInfo) {
 
         Comment comment = commentRepository.findById(commentId).orElseThrow();
@@ -47,6 +51,7 @@ public class CommentService {
         return CommentResponseData.from(updateComment, user);
     }
 
+    @Transactional
     public Long deleteComment(Long commentId) {
         commentRepository.deleteById(commentId);
         return commentId;

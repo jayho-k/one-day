@@ -1,12 +1,12 @@
-package jayho.userserver.controller;
+package jayho.oneday.controller;
 
 import jakarta.validation.Valid;
-import jayho.useractiverdb.entity.Comment;
-import jayho.userserver.service.CommentService;
-import jayho.userserver.service.request.CommentCreateRequest;
-import jayho.userserver.service.request.CommentUpdateRequest;
-import jayho.userserver.service.response.BaseResponse;
-import jayho.userserver.service.response.CommentResponseData;
+import jayho.oneday.entity.Comment;
+import jayho.oneday.service.CommentService;
+import jayho.oneday.service.request.CommentCreateRequest;
+import jayho.oneday.service.request.CommentUpdateRequest;
+import jayho.oneday.service.response.BaseResponse;
+import jayho.oneday.service.response.CommentResponseData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
