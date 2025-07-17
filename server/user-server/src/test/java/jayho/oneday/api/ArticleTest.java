@@ -1,8 +1,8 @@
-package jayho.userserver.api;
+package jayho.oneday.api;
 
 
-import jayho.userserver.data.DataInitialize;
-import jayho.userserver.service.response.BaseResponse;
+import jayho.oneday.data.DataInitialize;
+import jayho.oneday.service.response.BaseResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,12 +13,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.*;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,6 +37,7 @@ public class ArticleTest {
     @LocalServerPort
     int port;
     RestClient restClient;
+    TestRestTemplate testRestTemplate = new TestRestTemplate();
 
     @Autowired
     DataInitialize dataInitialize;
@@ -46,7 +53,8 @@ public class ArticleTest {
     @Test
     void createArticleTest() {
         Long writerId = 1L;
-        List<String> images = List.of("image1.png", "image2.png", "image3.png");
+        List<String> images = List.of("test-image.png", "image2.png", "image3.png");
+
         String content = "content";
 
         ResponseEntity<BaseResponse> res1 = createArticle(ArticleCreateRequest.builder()
@@ -57,6 +65,8 @@ public class ArticleTest {
 
         assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
+
+
 
     @DisplayName("게시글 생성 시 image null BAD_REQUEST 테스트")
     @Test
@@ -105,6 +115,25 @@ public class ArticleTest {
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
                 .toEntity(BaseResponse.class);
     }
+
+    @Test
+    void uploadArticleImageTest() throws IOException {
+        ClassPathResource path = new ClassPathResource("test-image.png");
+        FileSystemResource articleImage = new FileSystemResource(path.getFile());
+        MultiValueMap<String, Object> request = new LinkedMultiValueMap<>();
+        request.add("articleImage", articleImage);
+        uploadArticleImage(request);
+    }
+
+    ResponseEntity<BaseResponse> uploadArticleImage(MultiValueMap<String, Object> request) {
+        return restClient.post()
+                .uri("/article/upload/image")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(request)
+                .retrieve()
+                .toEntity(BaseResponse.class);
+    }
+
 
     @Getter
     @Builder
