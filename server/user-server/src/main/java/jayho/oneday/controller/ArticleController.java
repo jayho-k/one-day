@@ -1,18 +1,19 @@
-package jayho.userserver.controller;
+package jayho.oneday.controller;
 
 import jakarta.validation.Valid;
-import jayho.useractiverdb.entity.Article;
-import jayho.useractiverdb.entity.SavedArticle;
-import jayho.userserver.service.ArticleService;
-import jayho.userserver.service.request.ArticleCreateRequest;
-import jayho.userserver.service.request.ArticleUpdateRequest;
-import jayho.userserver.service.response.ArticleResponseData;
-import jayho.userserver.service.response.BaseResponse;
+import jayho.oneday.entity.Article;
+import jayho.oneday.entity.SavedArticle;
+import jayho.oneday.service.ArticleService;
+import jayho.oneday.service.request.ArticleCreateRequest;
+import jayho.oneday.service.request.ArticleUpdateRequest;
+import jayho.oneday.service.response.ArticleResponseData;
+import jayho.oneday.service.response.BaseResponse;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -32,8 +33,19 @@ public class ArticleController {
                         articleService.createArticle(request)));
     }
 
+    // test
+    @PostMapping("/article/upload/image")
+    public ResponseEntity<BaseResponse> uploadArticleImage(@RequestParam("articleImage") MultipartFile articleImage) {
+        articleService.uploadImage(articleImage);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(BaseResponse.from(
+                        200
+                ));
+    }
+
     @GetMapping("/article/{articleId}")
-    public ResponseEntity<BaseResponse<ArticleResponseData>> readArticle(@PathVariable("articleId") Long articleId){
+    public ResponseEntity<BaseResponse<ArticleResponseData>> readArticle(@PathVariable("articleId") Long articleId) {
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(BaseResponse.from(
                         200
