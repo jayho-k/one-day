@@ -2,6 +2,7 @@ package jayho.common.snowflake;
 
 import java.util.random.RandomGenerator;
 
+
 public class Snowflake {
 
     private static final int UNUSED_BITS = 1;
@@ -18,7 +19,7 @@ public class Snowflake {
 
     private final long nodeId = maxNodeId; // 임시
 
-    private final long epoch = 1752065076900L; // 2025.07.09 1752097800000
+    private final long epoch = 1752097800000L; // 2025.07.09
 
     private long lastTimeMillis = epoch;
 
