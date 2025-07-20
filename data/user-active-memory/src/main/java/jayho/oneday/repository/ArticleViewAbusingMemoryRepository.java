@@ -12,20 +12,21 @@ public class ArticleViewAbusingMemoryRepository {
 
     private final StringRedisTemplate stringRedisTemplate;
 
-    // article:view:articleId:userId
-    private static final String KEY = "article:view:%s:%s";
+    public static final String CACHE_NAME = "article::view";
 
-    public Boolean save(Long articleId, Long userId, Long timeout, TimeUnit unit) {
+    // article::view::articleId::{articleId}::userId::{userId}
+    private static final String KEY_FORMAT = "articleId::%s::userId::%s";
+
+    public Boolean register(Long articleId, Long userId, Long timeout, TimeUnit unit) {
         return stringRedisTemplate.opsForValue().setIfAbsent(generateKey(articleId, userId),"",timeout, unit);
     }
 
-    public String read(Long articleId, Long userId) {
-        return stringRedisTemplate.opsForValue().get(generateKey(articleId, userId));
+    public Boolean isAbused(Long articleId, Long userId) {
+        return stringRedisTemplate.hasKey(generateKey(articleId, userId));
     }
 
     private String generateKey(Long articleId, Long userId) {
-        return String.format(KEY, articleId, userId);
+        return CACHE_NAME+"::"+KEY_FORMAT.formatted(articleId,userId);
     }
-
 
 }

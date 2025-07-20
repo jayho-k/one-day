@@ -10,10 +10,12 @@ public class ViewMemoryRepository {
 
     private final StringRedisTemplate stringRedisTemplate;
 
-    // view:count:{articleId}
-    private static final String KEY = "article:view:count:%s";
+    public static final String CACHE_NAME = "article::view";
 
-    public Long increase(Long articleId, Long epochTime) {
+    // article::view::count::{articleId}
+    public static final String KEY_FORMAT = "count::articleId::%s";
+
+    public Long increase(Long articleId) {
         return stringRedisTemplate.opsForValue().increment(generateKey(articleId));
     }
 
@@ -30,8 +32,6 @@ public class ViewMemoryRepository {
     }
 
     private String generateKey(Long articleId) {
-        return KEY.formatted(articleId);
+        return CACHE_NAME+"::"+KEY_FORMAT.formatted(articleId);
     }
-
-
 }
