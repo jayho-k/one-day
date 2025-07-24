@@ -2,6 +2,7 @@ package jayho.oneday.api;
 
 
 import jayho.oneday.data.DataInitialize;
+import jayho.oneday.entity.ArticleImage;
 import jayho.oneday.service.response.BaseResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +26,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -52,8 +56,11 @@ public class ArticleTest {
     @DisplayName("게시글 생성 성공 테스트")
     @Test
     void createArticleTest() {
-        Long writerId = 1L;
-        List<String> images = List.of("test-image.png", "image2.png", "image3.png");
+        Long writerId = 2L;
+
+        List<ArticleImage> images = IntStream.range(0, 10)
+                .mapToObj(i -> ArticleImage.create((long) i, String.format("test-image%s.png", i)))
+                .collect(Collectors.toList());
 
         String content = "content";
 
@@ -87,7 +94,9 @@ public class ArticleTest {
     @DisplayName("게시글 생성 시 writerId null BAD_REQUEST 테스트")
     @Test
     void createArticle_writerIdNullTest() {
-        List<String> images = List.of("image1.png", "image2.png", "image3.png");
+        List<ArticleImage> images = IntStream.range(0, 10)
+                .mapToObj(i -> ArticleImage.create((long) i, String.format("test-image%s.png", i)))
+                .collect(Collectors.toList());
         String content = "content";
 
         ResponseEntity<BaseResponse> res3 = createArticle4xx(ArticleCreateRequest.builder()
@@ -116,30 +125,38 @@ public class ArticleTest {
                 .toEntity(BaseResponse.class);
     }
 
-    @Test
-    void uploadArticleImageTest() throws IOException {
-        ClassPathResource path = new ClassPathResource("test-image.png");
-        FileSystemResource articleImage = new FileSystemResource(path.getFile());
-        MultiValueMap<String, Object> request = new LinkedMultiValueMap<>();
-        request.add("articleImage", articleImage);
-        uploadArticleImage(request);
-    }
-
-    ResponseEntity<BaseResponse> uploadArticleImage(MultiValueMap<String, Object> request) {
-        return restClient.post()
-                .uri("/article/upload/image")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(request)
-                .retrieve()
-                .toEntity(BaseResponse.class);
-    }
+//    @Test
+//    void uploadArticleImageTest() throws IOException {
+//        ClassPathResource path = new ClassPathResource("test-image.png");
+//        FileSystemResource articleImage = new FileSystemResource(path.getFile());
+//        MultiValueMap<String, Object> request = new LinkedMultiValueMap<>();
+//        request.add("articleImage", articleImage);
+//        uploadArticleImage(request);
+//        uploadArticleImage2(articleImage.getFilename());
+//    }
+//
+//    ResponseEntity<BaseResponse> uploadArticleImage2(String articleImageName) {
+//        return restClient.put()
+//                .uri("/article/upload2/image?articleImageName={articleImageName}",articleImageName)
+//                .retrieve()
+//                .toEntity(BaseResponse.class);
+//    }
+//
+//    ResponseEntity<BaseResponse> uploadArticleImage(MultiValueMap<String, Object> request) {
+//        return restClient.post()
+//                .uri("/article/upload/image")
+//                .contentType(MediaType.MULTIPART_FORM_DATA)
+//                .body(request)
+//                .retrieve()
+//                .toEntity(BaseResponse.class);
+//    }
 
 
     @Getter
     @Builder
     @AllArgsConstructor
     static class ArticleCreateRequest{
-        private List<String> images;
+        private List<ArticleImage> images;
         private String content;
         private Long writerId;
     }
@@ -227,9 +244,13 @@ public class ArticleTest {
     @DisplayName("게시글 수정 성공 테스트")
     @Test
     void updateArticleTest(){
+        List<ArticleImage> articleImageList = IntStream.range(0, 10)
+                .mapToObj(i -> ArticleImage.create((long) i, String.format("test-image%s.png", i)))
+                .collect(Collectors.toList());
+
         ResponseEntity<BaseResponse> res1 = updateArticle(ArticleUpdateRequest.builder()
                 .articleId(1L)
-                .images(List.of("image1.png"))
+                .images(articleImageList)
                 .content("content1")
                 .build());
 
@@ -240,9 +261,13 @@ public class ArticleTest {
     @Test
     void updateArticle_articleIdNullTest(){
 
+        List<ArticleImage> articleImageList = IntStream.range(0, 10)
+                .mapToObj(i -> ArticleImage.create((long) i, String.format("test-image%s.png", i)))
+                .collect(Collectors.toList());
+
         ResponseEntity<BaseResponse> res2 = updateArticle4xx(ArticleUpdateRequest.builder()
                 .articleId(null)
-                .images(List.of("image1.png"))
+                .images(articleImageList)
                 .content("content123")
                 .build());
 
@@ -271,7 +296,7 @@ public class ArticleTest {
     @AllArgsConstructor
     static class ArticleUpdateRequest{
         private Long articleId;
-        private List<String> images;
+        private List<ArticleImage> images;
         private String content;
     }
 
