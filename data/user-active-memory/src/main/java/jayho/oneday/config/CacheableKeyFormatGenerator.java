@@ -25,11 +25,9 @@ public class CacheableKeyFormatGenerator implements KeyGenerator {
         }
         setParameters(method.getParameters(), params);
         CacheableKeyFormatMapping keyFormatAnnotation = method.getAnnotation(CacheableKeyFormatMapping.class);
-        String keyFormat = keyFormatAnnotation.keyFormat();
-        String formatted = keyFormat.formatted(
+        return keyFormatAnnotation.keyFormat().formatted(
                 Arrays.stream(keyFormatAnnotation.keys())
                         .map(key -> cacheParser.parseExpression(key).getValue(cacheContext)).toArray());
-        return formatted;
     }
 
     private void setParameters(Parameter[] parameters, Object... params) {

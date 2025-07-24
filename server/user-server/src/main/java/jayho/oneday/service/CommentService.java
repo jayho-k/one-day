@@ -22,7 +22,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
-    private final Snowflake snowflake = new Snowflake();
+    private final Snowflake snowflake;
 
     @Transactional
     public Comment createComment(CommentCreateRequest commentInfo) {
