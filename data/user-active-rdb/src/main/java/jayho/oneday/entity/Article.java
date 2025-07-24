@@ -19,7 +19,6 @@ public class Article {
     @Id
     @Setter(AccessLevel.NONE)
     private Long articleId;
-    private List<String> images;
     private String content;
     private Long writerId;
     private Boolean isDelete;
@@ -28,10 +27,9 @@ public class Article {
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 
-    public static Article create(Long articleId, List<String> images, String content, Long writerId) {
+    public static Article create(Long articleId, String content, Long writerId) {
         Article article = new Article();
         article.articleId = articleId;
-        article.images = images;
         article.content = content;
         article.writerId = writerId;
         article.isDelete = false;
