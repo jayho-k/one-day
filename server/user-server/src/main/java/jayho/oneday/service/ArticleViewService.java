@@ -20,8 +20,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 public class ArticleViewService {
 
     // db에서 관리 할지 고민
-    private static final Long ttl = 5L;
-    private static final TimeUnit ttlTimeUnit = MINUTES;
+    private static final Long TTL = 5L;
+    private static final TimeUnit TTL_TIME_UNIT = MINUTES;
 
     // Caching Service
     private final ArticleViewCache articleViewCache;
