@@ -1,6 +1,7 @@
 package jayho.oneday.service.response;
 
 import jayho.oneday.entity.Article;
+import jayho.oneday.entity.ArticleImage;
 import jayho.oneday.entity.User;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.util.List;
 public class ArticleResponseData {
 
     private Long articleId;
-    private List<String> images;
+    private List<ArticleImage> articleImageList;
     private String content;
     private Long writerId;
     private String writerName;
@@ -21,10 +22,10 @@ public class ArticleResponseData {
     private LocalDateTime modifiedAt;
 
 
-    public static ArticleResponseData from(Article article, User user) {
+    public static ArticleResponseData from(Article article, User user, List<ArticleImage> articleImageList) {
         ArticleResponseData data = new ArticleResponseData();
         data.articleId = article.getArticleId();
-        data.images = article.getImages();
+        data.articleImageList = articleImageList;
         data.content = article.getContent();
         data.writerId = user.getUserId();
         data.writerName = user.getUserName();

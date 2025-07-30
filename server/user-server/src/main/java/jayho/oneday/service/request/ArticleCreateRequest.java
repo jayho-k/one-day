@@ -1,6 +1,7 @@
 package jayho.oneday.service.request;
 
 import jakarta.validation.constraints.NotNull;
+import jayho.oneday.entity.ArticleImage;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -11,7 +12,7 @@ import java.util.List;
 public class ArticleCreateRequest {
 
     @NotNull
-    private List<String> images;
+    private List<ArticleImage> images;
     private String content;
 
     @NotNull

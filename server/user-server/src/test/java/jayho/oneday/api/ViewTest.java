@@ -27,8 +27,8 @@ public class ViewTest {
 
     @Test
     void increaseViewCountTest() {
-        Long articleId = 1L;
-        Long userId = 1L;
+        Long articleId = 2L;
+        Long userId = 2L;
         ResponseEntity<BaseResponse> res1 = increaseViewCount(articleId, userId);
         ResponseEntity<BaseResponse> res2 = increaseViewCount4xx(null, userId);
         ResponseEntity<BaseResponse> res3 = increaseViewCount4xx(articleId, null);
@@ -58,10 +58,7 @@ public class ViewTest {
         ResponseEntity<BaseResponse> res1 = readViewCount(articleId);
         ResponseEntity<BaseResponse> res2 = readViewCount4xx(null);
 
-        System.out.println(res1.getBody());
         assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        System.out.println(res2.getBody());
         assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
     ResponseEntity<BaseResponse> readViewCount(Long articleId){

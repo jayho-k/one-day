@@ -5,7 +5,9 @@ import jayho.oneday.entity.Article;
 import jayho.oneday.entity.SavedArticle;
 import jayho.oneday.service.ArticleService;
 import jayho.oneday.service.request.ArticleCreateRequest;
+import jayho.oneday.service.request.ArticleImageUploadRequest;
 import jayho.oneday.service.request.ArticleUpdateRequest;
+import jayho.oneday.service.response.ArticleImageResponseData;
 import jayho.oneday.service.response.ArticleResponseData;
 import jayho.oneday.service.response.BaseResponse;
 
@@ -33,14 +35,31 @@ public class ArticleController {
                         articleService.createArticle(request)));
     }
 
-    // test
-    @PostMapping("/article/upload/image")
-    public ResponseEntity<BaseResponse> uploadArticleImage(@RequestParam("articleImage") MultipartFile articleImage) {
-        articleService.uploadImage(articleImage);
+    // presigned url
+    @GetMapping("/article/upload/image-presigned")
+    public ResponseEntity<BaseResponse<ArticleImageResponseData>> uploadArticleImage(@RequestBody @Valid ArticleImageUploadRequest request) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(BaseResponse.from(
-                        200
-                ));
+                        200,
+                        articleService.getUploadPresignedUrl(request))
+                );
+    }
+
+//    @GetMapping("/article/download/image-presigned")
+//    public ResponseEntity<BaseResponse> downloadArticleImage(@RequestBody @Valid ArticleImageDownloadRequest request) {
+//        return ResponseEntity.status(HttpStatus.OK)
+//                .body(BaseResponse.from(
+//                        200,
+//                        articleService.getDownloadPresignedUrl(request))
+//                );
+//    }
+
+    @PutMapping("/article/image")
+    public ResponseEntity<BaseResponse<ArticleImageResponseData>> updateArticleImage(@RequestBody @Valid ArticleUpdateRequest request) {
+        articleService.updateArticleImage(request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(BaseResponse.from(200));
+
     }
 
     @GetMapping("/article/{articleId}")
