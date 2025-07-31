@@ -1,0 +1,13 @@
+plugins {
+    id "java-common-conventions"
+    id "spring-common-conventions"
+}
+
+
+dependencies {
+    implementation 'org.springframework.kafka:spring-kafka'
+//    implementation 'org.apache.kafka:kafka-streams'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+}

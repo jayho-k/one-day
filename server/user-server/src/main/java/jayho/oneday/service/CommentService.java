@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CommentService {
 
@@ -24,7 +23,6 @@ public class CommentService {
     private final UserRepository userRepository;
     private final Snowflake snowflake;
 
-    @Transactional
     public Comment createComment(CommentCreateRequest commentInfo) {
         return commentRepository.save(
                 Comment.create(snowflake.nextId(),
@@ -51,7 +49,6 @@ public class CommentService {
         return CommentResponseData.from(updateComment, user);
     }
 
-    @Transactional
     public Long deleteComment(Long commentId) {
         commentRepository.deleteById(commentId);
         return commentId;

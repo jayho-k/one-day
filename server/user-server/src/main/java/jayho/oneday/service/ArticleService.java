@@ -7,7 +7,6 @@ import jayho.oneday.entity.SavedArticle;
 import jayho.oneday.entity.User;
 import jayho.oneday.repository.*;
 import jayho.oneday.service.request.ArticleCreateRequest;
-import jayho.oneday.service.request.ArticleImageCreateRequest;
 import jayho.oneday.service.request.ArticleImageUploadRequest;
 import jayho.oneday.service.request.ArticleUpdateRequest;
 import jayho.oneday.service.response.ArticleImageResponseData;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ArticleService {
 
@@ -112,9 +110,6 @@ public class ArticleService {
 
     }
 
-
-
-
     @Transactional
     public Article tmpDeleteArticle(Long articleId) {
         Article article = articleRepository.findById(articleId).orElseThrow();
@@ -122,13 +117,11 @@ public class ArticleService {
         return articleRepository.save(article);
     }
 
-    @Transactional
     public Long deleteArticle(Long articleId) {
         articleRepository.deleteById(articleId);
         return articleId;
     }
 
-    @Transactional
     public SavedArticle saveCollectArticle(Long articleId, Long userId) {
         return savedArticleRepository.save(
                 SavedArticle.create(snowflake.nextId(), articleId, userId)
