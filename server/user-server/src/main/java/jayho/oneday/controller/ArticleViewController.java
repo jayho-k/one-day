@@ -18,12 +18,10 @@ public class ArticleViewController {
     @PostMapping("/view-count/article/{articleId}/user/{userId}")
     public ResponseEntity<BaseResponse<ArticleViewResponseData>> increaseViewCount(@PathVariable("articleId") Long articleId,
                                                                                    @PathVariable("userId") Long userId) {
+        articleViewService.increaseViewCountToMQ(articleId, userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(BaseResponse.from(
-                        200,
-                        articleViewService.increaseViewCount(articleId, userId))
-                );
+                .body(BaseResponse.from(200));
     }
 
     @GetMapping("/view-count/article/{articleId}")
