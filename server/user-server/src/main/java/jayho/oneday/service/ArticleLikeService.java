@@ -28,8 +28,8 @@ public class ArticleLikeService {
     private final ArticleLikeCountRepository articleLikeCountRepository;
 
     public ArticleLikeResponseData articleLike(Long articleId, Long userId) {
-        ArticleLike articleLike;
-        articleLike = saveArticleLike(articleId, userId);
+
+        ArticleLike articleLike = saveArticleLike(articleId, userId);
 
         // article like가 이미 존재한다면 update
         if (articleLike==null){

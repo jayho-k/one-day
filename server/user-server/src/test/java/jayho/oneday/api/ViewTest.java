@@ -10,6 +10,9 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -22,13 +25,14 @@ public class ViewTest {
 
     @BeforeEach
     void setUp() {
+//        restClient = RestClient.create(String.format("http://localhost:%s",8080));
         restClient = RestClient.create(String.format("http://localhost:%s",port));
     }
 
     @Test
     void increaseViewCountTest() {
         Long articleId = 2L;
-        Long userId = 2L;
+        Long userId = 1L;
         ResponseEntity<BaseResponse> res1 = increaseViewCount(articleId, userId);
         ResponseEntity<BaseResponse> res2 = increaseViewCount4xx(null, userId);
         ResponseEntity<BaseResponse> res3 = increaseViewCount4xx(articleId, null);
@@ -36,6 +40,14 @@ public class ViewTest {
         assertThat(res1.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void increaseViewCountBulkTest() {
+        LongStream.range(1, 51).forEach(i -> {
+            ResponseEntity<BaseResponse> res = increaseViewCount(i, i+1);
+            assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
+        });
     }
 
     ResponseEntity<BaseResponse> increaseViewCount(Long articleId, Long userId){

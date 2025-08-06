@@ -2,16 +2,13 @@ package jayho.oneday.service;
 
 
 import jayho.common.snowflake.Snowflake;
-import jayho.oneday.entity.Article;
-import jayho.oneday.entity.SavedArticle;
-import jayho.oneday.entity.User;
+import jayho.oneday.entity.*;
 import jayho.oneday.repository.*;
 import jayho.oneday.service.request.ArticleCreateRequest;
 import jayho.oneday.service.request.ArticleImageUploadRequest;
 import jayho.oneday.service.request.ArticleUpdateRequest;
 import jayho.oneday.service.response.ArticleImageResponseData;
 import jayho.oneday.service.response.ArticleResponseData;
-import jayho.oneday.entity.ArticleImage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +30,7 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final ArticleImageRepository articleImageRepository;
     private final SavedArticleRepository savedArticleRepository;
+    private final ArticleViewCountRepository articleViewCountRepository;
 
 
     @Transactional
@@ -46,11 +44,13 @@ public class ArticleService {
             throw new RuntimeException("실패한 image를 저장하는데 실패했습니다.");
         }
 
-        return articleRepository.save(Article.create(
+        Article article = articleRepository.save(Article.create(
                 articleId,
                 articleInfo.getContent(),
                 articleInfo.getWriterId()
         ));
+        articleViewCountRepository.save(ArticleViewCount.create(articleId,0L));
+        return article;
     }
 
 
