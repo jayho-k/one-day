@@ -9,6 +9,7 @@ include(':common:snowflake')
 
 include(':server')
 include(':server:user-server')
+include(':server:ai-server')
 
 include(':data')
 include(':data:user-active-rdb')
