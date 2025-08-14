@@ -19,16 +19,16 @@ public class ViewMemoryRepository {
         return stringRedisTemplate.opsForValue().increment(generateKey(articleId));
     }
 
+    public void setArticleViewCount(Long articleId, Long count) {
+        stringRedisTemplate.opsForValue().set(generateKey(articleId), String.valueOf(count));
+    }
+
     public Long read(Long articleId) {
         String value = stringRedisTemplate.opsForValue().get(generateKey(articleId));
         if (value == null) {
             return 0L;
         }
         return Long.valueOf(value);
-    }
-
-    public void setKey(Long articleId, Long articleView) {
-        stringRedisTemplate.opsForValue().set(generateKey(articleId), articleView.toString());
     }
 
     private String generateKey(Long articleId) {

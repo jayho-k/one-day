@@ -2,31 +2,22 @@ package jayho.oneday.adaptor.streams;
 
 import jayho.oneday.entity.ArticleViewCount;
 import jayho.oneday.event.ArticleViewEvent;
-import jayho.oneday.serializer.ArticleViewEventSerde;
-import jayho.oneday.serializer.ListSerde;
-import jayho.oneday.serializer.MapSerde;
+import jayho.oneday.serde.ArticleViewEventSerde;
+import jayho.oneday.serde.MapSerde;
 import jayho.oneday.service.ArticleViewService;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
-import org.springframework.kafka.annotation.KafkaStreamsDefaultConfiguration;
-import org.springframework.kafka.config.KafkaStreamsConfiguration;
 
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Configuration
 @EnableKafkaStreams
