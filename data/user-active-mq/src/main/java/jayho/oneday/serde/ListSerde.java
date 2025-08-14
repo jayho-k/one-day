@@ -1,4 +1,5 @@
-package jayho.oneday.serializer;
+package jayho.oneday.serde;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -7,17 +8,17 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
 
-import java.util.Map;
+import java.util.List;
 
 @RequiredArgsConstructor
-public class MapSerde<K,V> implements Serde<Map<K,V>> {
+public class ListSerde<T> implements Serde<List<T>> {
 
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    private final Class<K> key;
-    private final Class<V> value;
+    private final Class<T> clazz;
+
 
     @Override
-    public Serializer<Map<K, V>> serializer() {
+    public Serializer<List<T>> serializer() {
         return (topic, data) -> {
             try {
                 return objectMapper.writeValueAsBytes(data);
@@ -28,18 +29,16 @@ public class MapSerde<K,V> implements Serde<Map<K,V>> {
     }
 
     @Override
-    public Deserializer<Map<K, V>> deserializer() {
+    public Deserializer<List<T>> deserializer() {
         return (topic, data) -> {
             try {
                 return objectMapper.readValue(
                         data,
-                        objectMapper.getTypeFactory().constructMapType(Map.class, key, value)
+                        objectMapper.getTypeFactory().constructCollectionType(List.class, clazz)
                 );
             } catch (Exception e) {
-
                 throw new RuntimeException(e);
             }
         };
     }
 }
-
