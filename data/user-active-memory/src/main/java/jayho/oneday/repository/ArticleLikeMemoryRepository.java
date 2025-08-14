@@ -6,27 +6,31 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class ViewMemoryRepository {
+public class ArticleLikeMemoryRepository {
 
     private final StringRedisTemplate stringRedisTemplate;
 
-    public static final String CACHE_NAME = "article::view";
+    public static final String CACHE_NAME = "article::like";
 
-    // article::view::count::{articleId}
+    // article::like::count::{articleId}
     public static final String KEY_FORMAT = "count::articleId::%s";
 
     public Long increase(Long articleId) {
         return stringRedisTemplate.opsForValue().increment(generateKey(articleId));
     }
 
-    public void setArticleViewCount(Long articleId, Long count) {
+    public Long decrease(Long articleId) {
+        return stringRedisTemplate.opsForValue().decrement(generateKey(articleId));
+    }
+
+    public void setLikeCount(Long articleId, Long count) {
         stringRedisTemplate.opsForValue().set(generateKey(articleId), String.valueOf(count));
     }
 
     public Long read(Long articleId) {
         String value = stringRedisTemplate.opsForValue().get(generateKey(articleId));
         if (value == null) {
-            return 0L;
+            return null;
         }
         return Long.valueOf(value);
     }
@@ -34,4 +38,5 @@ public class ViewMemoryRepository {
     private String generateKey(Long articleId) {
         return CACHE_NAME+"::"+KEY_FORMAT.formatted(articleId);
     }
+
 }

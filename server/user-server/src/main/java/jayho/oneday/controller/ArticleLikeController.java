@@ -18,23 +18,23 @@ public class ArticleLikeController {
 
     @PostMapping("/article-likes/article/{articleId}/user/{userId}")
     public ResponseEntity<BaseResponse<ArticleLikeResponseData>> articleLike(@PathVariable Long articleId,
-                                                                 @PathVariable Long userId) {
+                                                                             @PathVariable Long userId) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(BaseResponse.from(
                         201,
-                        articleLikeService.articleLike(articleId, userId)
+                        articleLikeService.articleLikeMQ(articleId, userId)
                 ));
     }
 
-    @DeleteMapping("/article-likes/article/{articleId}/user/{userId}")
+    @PutMapping("/article-likes/article/{articleId}/user/{userId}")
     public ResponseEntity<BaseResponse<ArticleLikeResponseData>> articleUnlike(@PathVariable Long articleId,
                                                                                @PathVariable Long userId) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(BaseResponse.from(
                         200,
-                        articleLikeService.articleUnlike(articleId, userId)
+                        articleLikeService.articleUnlikeMQ(articleId, userId)
                 ));
     }
 
