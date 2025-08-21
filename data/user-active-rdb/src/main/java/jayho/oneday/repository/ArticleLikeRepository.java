@@ -2,26 +2,35 @@ package jayho.oneday.repository;
 
 import jayho.oneday.entity.ArticleLike;
 import jayho.oneday.entity.id.LikeId;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
-public interface ArticleLikeRepository extends JpaRepository<ArticleLike, LikeId> {
+@Repository
+@RequiredArgsConstructor
+public class ArticleLikeRepository {
 
-    @Query(
-            value = "insert into article_like (article_id, user_id, liked, created_at, modified_at) " +
-                    "values (:articleId, :userId, :liked, :createdAt, :modifiedAt);",
-            nativeQuery = true
-    )
-    @Modifying
-    int saveArticleLike(@Param("articleId") Long articleId,
-                     @Param("userId") Long userId,
-                     @Param("liked") Boolean liked,
-                     @Param("createdAt") LocalDateTime createdAt,
-                     @Param("modifiedAt") LocalDateTime modifiedAt);
+    private final ArticleLikeJpaRepository articleLikeJpaRepository;
+    private final ArticleLikeJdbcRepository articleLikeJdbcRepository;
+
+    public ArticleLike save(ArticleLike articleLike) {
+        return articleLikeJpaRepository.save(articleLike);
+    }
+
+    public int saveArticleLike(Long articleId, Long userId, Boolean like, LocalDateTime createdAt, LocalDateTime modifiedAt) {
+        return articleLikeJpaRepository.saveArticleLike(articleId, userId, like, createdAt, modifiedAt);
+    }
+
+    public int[] saveAll(List<ArticleLike> articleLikeList) {
+        return articleLikeJdbcRepository.saveAll(articleLikeList);
+    }
+
+    public Optional<ArticleLike> findById(LikeId likeId) {
+        return articleLikeJpaRepository.findById(likeId);
+    }
 
 }

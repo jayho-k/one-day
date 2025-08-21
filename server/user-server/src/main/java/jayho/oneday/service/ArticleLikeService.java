@@ -5,22 +5,20 @@ import jayho.oneday.controller.exception.NegativeException;
 import jayho.oneday.entity.ArticleLike;
 import jayho.oneday.entity.ArticleLikeCount;
 import jayho.oneday.entity.id.LikeId;
+import jayho.oneday.event.ArticleLikeCountEvent;
 import jayho.oneday.repository.ArticleLikeCountRepository;
 import jayho.oneday.repository.ArticleLikeMemoryRepository;
 import jayho.oneday.repository.ArticleLikeRepository;
 import jayho.oneday.service.response.ArticleLikeCountResponseData;
-import jayho.oneday.service.response.ArticleLikeResponseData;
-import jayho.oneday.service.response.ArticleViewResponseData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.Nullable;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -33,65 +31,99 @@ public class ArticleLikeService {
     private final ArticleLikeReadService articleLikeReadService; // memory
     private final ArticleLikeProducer articleLikeProducer; // mq
 
-    @Transactional
-    public ArticleLikeResponseData articleLikeMQ(Long articleId, Long userId){
-        ArticleLike articleLike = ArticleLike.create(articleId, userId);
-        try {
-            articleLikeRepository.saveArticleLike(articleLike.getArticleId(),
-                    articleLike.getUserId(),
-                    articleLike.getLiked(),
-                    articleLike.getCreatedAt(),
-                    articleLike.getModifiedAt());
-            articleLikeProducer.articleLikeMessage(articleId, userId, articleLike.getLiked());
-        } catch (DataIntegrityViolationException e) {
-            articleLike = articleLikeRepository.findById(LikeId.create(articleId, userId))
-                    .map(updateArticleLike -> {
-                        updateArticleLike.setLiked(true);
-                        updateArticleLike.setModifiedAt(LocalDateTime.now());
-                        articleLikeProducer.articleLikeMessage(articleId, userId, updateArticleLike.getLiked());
-                        return updateArticleLike;
-                    }).orElseThrow();
-        }
-        return ArticleLikeResponseData.from(articleLike);
+
+    // article like message >> MQ
+    public void articleLikeToMQ(Long articleId, Long userId) {
+        articleLikeProducer.articleLikeMessage(articleId, userId, true);
     }
 
-    public ArticleLikeResponseData articleUnlikeMQ(Long articleId, Long userId) {
-
-        ArticleLike articleLike = ArticleLike.create(articleId, userId);
-        articleLike.setLiked(false);
-        articleLike.setModifiedAt(LocalDateTime.now());
-        ArticleLike articleUnlike = articleLikeRepository.save(articleLike);
-
-        articleLikeCountRepository.findById(articleId)
-                .ifPresent(articleLikeCount ->{
-                    articleLikeCount.setLikeCount(articleLikeCount.getLikeCount()-1);
-                    articleLikeCountRepository.save(articleLikeCount);
-                });
-
-        articleLikeProducer.articleLikeMessage(articleId, userId, articleLike.getLiked());
-        return ArticleLikeResponseData.from(articleUnlike);
+    public void validateArticleLikeBulk(List<ArticleLike> articleLikeList) {
+        validateArticleLikeList(articleLikeList);
     }
 
-    public void articleLikeCountingMQ(Long articleId, Boolean liked) throws NegativeException {
+    // bulk
+    // MQ(article like) >> message 정합성 check >> MQ(article like count)
+    private void validateArticleLikeList(List<ArticleLike> articleLikeList) {
+        List<ArticleLike> sucessInsertList = new ArrayList<>();
+        List<ArticleLike> failInsertList = new ArrayList<>();
+
+        // bulk insert / fail insert : update retry
+        int[] resultArr = articleLikeRepository.saveAll(articleLikeList);
+        IntStream.range(0, articleLikeList.size()).forEach(idx -> {
+            if (resultArr[idx] == 1) {
+                sucessInsertList.add(articleLikeList.get(idx));
+            } else {
+                failInsertList.add(articleLikeList.get(idx));
+            }
+        });
+
+        // successInsertList
+        articleLikeProducer.articleLikeCountMessage(
+                getArticleLikeCountEventMap(sucessInsertList)
+        );
+        // failInsertList :
+        failInsertRetryToUpdate(failInsertList);
+    }
+
+    @NotNull
+    private Map<Long, ArticleLikeCountEvent> getArticleLikeCountEventMap(List<ArticleLike> sucessInsertList) {
+        Map<Long, ArticleLikeCountEvent> map = new HashMap<>();
+        sucessInsertList.forEach(articleLike -> {
+            map.computeIfAbsent(articleLike.getArticleId(), k ->
+                            ArticleLikeCountEvent.create(articleLike.getArticleId(), 0L, articleLike.getLiked()))
+                    .setCount(map.get(articleLike.getArticleId()).getCount() + 1);
+        });
+        return map;
+    }
+
+    private void failInsertRetryToUpdate(List<ArticleLike> failInsertList) {
+        // TODO 한번에 select해서 넣는 로직으로 변경할 것 >> 많지 않을 거 같다면 단건
+        failInsertList.forEach(articleLike -> {
+            articleLikeRepository.findById(LikeId.create(articleLike.getArticleId(), articleLike.getUserId()))
+                    .ifPresent((existArticleLike -> {
+                        if (existArticleLike.getLiked() == true) {
+                            log.info("중복 된 key 입니다. articleId:{}, userId:{} ",existArticleLike.getArticleId(), existArticleLike.getUserId());
+                            return;
+                        }
+                        existArticleLike.setLiked(true);
+                        ArticleLike updatedArticle = articleLikeRepository.save(existArticleLike);
+                        articleLikeProducer.articleLikeCountMessage(updatedArticle.getArticleId(), 1L, updatedArticle.getLiked());
+                    })
+            );
+        });
+    }
+
+    // MQ(article like count) >> message counting >> DB (counting)
+    public void articleLikeCountingMQ(Long articleId, Boolean liked, Long likeBundleCount) {
         articleLikeCountRepository.findById(articleId)
                 .ifPresentOrElse(
                         articleLikeCount -> {
-                            articleLikeCount.setLikeCount(
-                                    liked == true ?
-                                            articleLikeCount.getLikeCount() + 1 :
-                                            articleLikeCount.getLikeCount() - 1
-                            );
+                            Long updateArticleCount = liked == true ?
+                                    articleLikeCount.getLikeCount() + likeBundleCount :
+                                    articleLikeCount.getLikeCount() - likeBundleCount;
+                            articleLikeCount.setLikeCount(updateArticleCount);
                             articleLikeCountRepository.save(articleLikeCount);
-                            articleLikeMemoryRepository.setLikeCount(articleId, articleLikeCount.getLikeCount());
-                        },
-                        () -> articleLikeCountRepository.save(
-                                ArticleLikeCount.create(articleId)));
+                            articleLikeMemoryRepository.setLikeCount(articleId, updateArticleCount);
+                        }, () -> {
+                            articleLikeCountRepository.save(ArticleLikeCount.create(articleId, likeBundleCount));
+                            articleLikeMemoryRepository.increase(articleId);
+                        }
+                );
     }
 
-//    private Long checkLikeCountInCache(Long articleId, Boolean liked) {
-//        return liked == true ? articleLikeMemoryRepository.increase(articleId) :
-//                               articleLikeMemoryRepository.decrease(articleId);
-//    }
+    public void articleUnlikeMQ(Long articleId, Long userId) {
+        articleLikeRepository.findById(LikeId.create(articleId, userId))
+                .ifPresentOrElse(articleLike -> {
+                    articleLike.setLiked(false);
+                    articleLike.setModifiedAt(LocalDateTime.now());
+                    articleLikeProducer.articleLikeMessage(articleId, userId, articleLike.getLiked());
+                }, () -> {
+                    articleLikeRepository.save(
+                            ArticleLike.create(articleId, userId, false)
+                    );
+                    articleLikeProducer.articleLikeMessage(articleId, userId, false);
+                });
+    }
 
     public ArticleLikeCountResponseData readLikeCount(Long articleId) {
         Long articleLIkeCount;
@@ -101,69 +133,5 @@ public class ArticleLikeService {
         return ArticleLikeCountResponseData.from(
                 ArticleLikeCount.create(articleId, articleLIkeCount));
     }
-
-
-//    public ArticleLikeResponseData articleLike(Long articleId, Long userId) {
-//
-//        ArticleLike articleLike = saveArticleLike(articleId, userId);
-//
-//        // article like가 이미 존재한다면 update
-//        if (articleLike==null){
-//            articleLike = updateArticleLike(articleId, userId);
-//        }
-//
-//        // article like counting
-//        articleLikeCounting(articleId);
-//
-//        assert articleLike != null;
-//        articleLikeProducer.articleLikeMessage(articleId, userId, articleLike.getLiked());
-//        return ArticleLikeResponseData.from(articleLike);
-//    }
-//
-//    @Nullable
-//    private ArticleLike saveArticleLike(Long articleId, Long userId) {
-//        return transactionTemplate.execute(status -> {
-//            try {
-//                ArticleLike insertArticleLike = ArticleLike.create(articleId, userId);
-//                articleLikeRepository.saveArticleLike(insertArticleLike.getArticleId(),
-//                        insertArticleLike.getUserId(),
-//                        insertArticleLike.getLiked(),
-//                        insertArticleLike.getCreatedAt(),
-//                        insertArticleLike.getModifiedAt());
-//
-//                // article like counting
-//                articleLikeCounting(articleId);
-//                return insertArticleLike;
-//            } catch (DataIntegrityViolationException e) {
-//                status.setRollbackOnly();
-//                return null;
-//            }
-//        });
-//    }
-//
-//    private ArticleLike updateArticleLike(Long articleId, Long userId) {
-//        return transactionTemplate.execute(status -> articleLikeRepository.findById(LikeId.create(articleId, userId))
-//                .map(updateArticleLike -> {
-//                    updateArticleLike.setLiked(true);
-//                    updateArticleLike.setModifiedAt(LocalDateTime.now());
-//
-//                    // article like counting
-//                    articleLikeCounting(articleId);
-//                    return articleLikeRepository.save(updateArticleLike);
-//                }).orElseThrow());
-//    }
-//
-//    private void articleLikeCounting(Long articleId) {
-//        articleLikeCountRepository.findById(articleId)
-//                .ifPresentOrElse(
-//                        articleLikeCount -> {
-//                            articleLikeCount.setLikeCount(articleLikeCount.getLikeCount() + 1);
-//                            articleLikeCountRepository.save(articleLikeCount);
-//                        },
-//                        () -> articleLikeCountRepository.save(
-//                                ArticleLikeCount.create(articleId)));
-//    }
-
-
 
 }
