@@ -1,8 +1,9 @@
 package jayho.oneday.config;
 
+import jayho.oneday.deserializer.ArticleLikeEventDeserializer;
+import jayho.oneday.event.ArticleLikeEvent;
 import jayho.oneday.event.ArticleViewEvent;
-import jayho.oneday.serializer.ArticleViewEventDeserializer;
-import jayho.oneday.serializer.ArticleViewEventSerializer;
+import jayho.oneday.deserializer.ArticleViewEventDeserializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,7 +27,7 @@ public class KafkaConsumerConfig {
     public ConsumerFactory<String, ArticleViewEvent> consumerArticleViewFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "default-group");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "article-view-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ArticleViewEventDeserializer.class);
 //        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
@@ -41,5 +42,24 @@ public class KafkaConsumerConfig {
         return factory;
     }
 
+    @Bean
+    @Qualifier("consumerArticleLikeFactory")
+    public ConsumerFactory<String, ArticleLikeEvent> consumerArticleLikeFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "default-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ArticleLikeEventDeserializer.class);
+//        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+        return new DefaultKafkaConsumerFactory<>(props);
+    }
+
+    @Bean
+    @Qualifier("articleLikeKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, ArticleLikeEvent> articleLikeKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, ArticleLikeEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerArticleLikeFactory());
+        return factory;
+    }
 
 }

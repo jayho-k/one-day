@@ -1,6 +1,8 @@
 package jayho.oneday.config;
 
+import jayho.oneday.event.ArticleLikeEvent;
 import jayho.oneday.event.ArticleViewEvent;
+import jayho.oneday.serializer.ArticleLikeEventSerializer;
 import jayho.oneday.serializer.ArticleViewEventSerializer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -49,5 +51,22 @@ public class KafkaProducerConfig {
     public KafkaTemplate<String, ArticleViewEvent> kafkaArticleViewTemplate() {
         return new KafkaTemplate<>(producerArticleViewFactory());
     }
+
+    @Bean
+    @Qualifier("producerArticleLikeFactory")
+    public ProducerFactory<String, ArticleLikeEvent> producerArticleLikeFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ArticleLikeEventSerializer.class);
+        return new DefaultKafkaProducerFactory<>(props);
+    }
+
+    @Bean
+    @Qualifier("kafkaArticleLikeTemplate")
+    public KafkaTemplate<String, ArticleLikeEvent> kafkaArticleLikeTemplate() {
+        return new KafkaTemplate<>(producerArticleLikeFactory());
+    }
+
 
 }

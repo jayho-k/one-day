@@ -10,20 +10,23 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 
+import java.util.stream.LongStream;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 @TestMethodOrder(OrderAnnotation.class)
-@SpringBootTest(webEnvironment = RANDOM_PORT)
+//@SpringBootTest(webEnvironment = RANDOM_PORT)
 public class ArticleLikeTest {
 
-    @LocalServerPort
-    int port;
+//    @LocalServerPort
+//    int port;
     RestClient restClient;
 
     @BeforeEach
     void setUp() {
-        restClient = RestClient.create(String.format("http://localhost:%s",port));
+        restClient = RestClient.create(String.format("http://localhost:%s",8080));
+//        restClient = RestClient.create(String.format("http://localhost:%s",port));
     }
 
     @Test
@@ -40,6 +43,16 @@ public class ArticleLikeTest {
         assertThat(res2.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(res3.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
+
+    @Test
+    void likeBulkTest() {
+        LongStream.range(25,30).forEach(i -> {
+            ResponseEntity<BaseResponse> res = createLike(i, i+2);
+            assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        });
+    }
+
+
     ResponseEntity<BaseResponse> createLike(Long articleId, Long userId) {
         return restClient.post()
                 .uri("/article-likes/article/{articleId}/user/{userid}", articleId, userId)
@@ -110,6 +123,8 @@ public class ArticleLikeTest {
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {})
                 .toEntity(BaseResponse.class);
     }
+
+
 
 
 }
