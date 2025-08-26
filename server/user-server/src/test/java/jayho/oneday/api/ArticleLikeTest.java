@@ -46,8 +46,8 @@ public class ArticleLikeTest {
 
     @Test
     void likeBulkTest() {
-        LongStream.range(25,30).forEach(i -> {
-            ResponseEntity<BaseResponse> res = createLike(i, i+2);
+        LongStream.range(1,11).forEach(i -> {
+            ResponseEntity<BaseResponse> res = createLike(1L, i);
             assertThat(res.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         });
     }

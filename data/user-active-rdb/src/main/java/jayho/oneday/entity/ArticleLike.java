@@ -24,13 +24,15 @@ public class ArticleLike {
     @Setter
     private LocalDateTime modifiedAt;
 
-    public static ArticleLike create(Long articleId, Long userId) {
+    public static ArticleLike create(Long articleId, Long userId, Boolean isLiked) {
         ArticleLike like = new ArticleLike();
         like.articleId = articleId;
         like.userId = userId;
-        like.liked = true;
+        like.liked = isLiked;
         like.createdAt = LocalDateTime.now();
         like.modifiedAt = LocalDateTime.now();
         return like;
     }
+
+
 }

@@ -19,23 +19,21 @@ public class ArticleLikeController {
     @PostMapping("/article-likes/article/{articleId}/user/{userId}")
     public ResponseEntity<BaseResponse<ArticleLikeResponseData>> articleLike(@PathVariable Long articleId,
                                                                              @PathVariable Long userId) {
+        articleLikeService.articleLikeToMQ(articleId, userId);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(BaseResponse.from(
-                        201,
-                        articleLikeService.articleLikeMQ(articleId, userId)
+                        201
                 ));
     }
 
     @PutMapping("/article-likes/article/{articleId}/user/{userId}")
     public ResponseEntity<BaseResponse<ArticleLikeResponseData>> articleUnlike(@PathVariable Long articleId,
                                                                                @PathVariable Long userId) {
+        articleLikeService.articleUnlikeMQ(articleId, userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(BaseResponse.from(
-                        200,
-                        articleLikeService.articleUnlikeMQ(articleId, userId)
-                ));
+                .body(BaseResponse.from(200));
     }
 
     @GetMapping("/article-likes/article/{articleId}/count")
