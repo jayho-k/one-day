@@ -3,6 +3,7 @@ package jayho.oneday.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Version;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,12 +12,13 @@ import lombok.Setter;
 public class ArticleLikeCount {
 
     @Id
-    Long articleId;
+    private Long articleId;
+
     @Setter
-    Long likeCount;
+    private Long likeCount;
 
     @Version
-    Long version;
+    private Long version;
 
     public static ArticleLikeCount create(Long articleId) {
         ArticleLikeCount articleLikeCount = new ArticleLikeCount();

@@ -22,6 +22,22 @@ services:
       timeout: 5s
       retries: 10
 
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.18
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - ../data-resource/etcd:/etcd
+    command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
   minio:
     image: minio/minio:RELEASE.2025-05-24T17-08-30Z
     restart: always
@@ -31,8 +47,10 @@ services:
       - '9000:9000'
       - '9001:9001'
     environment:
-      MINIO_ROOT_USER: ${MINIO_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+#      MINIO_ROOT_USER: ${MINIO_USER}
+#      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+      MINIO_ACCESS_KEY:  minioadmin
+      MINIO_SECRET_KEY: minioadmin
     volumes:
       - ../data-resource/minio/data1:/data1
       - ../data-resource/minio/data2:/data2
@@ -67,6 +85,34 @@ services:
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  standalone:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.6.0
+#    platform: linux/amd64
+    command: ["milvus", "run", "standalone"]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MQ_TYPE: woodpecker
+    volumes:
+      - ../data-resource/milvus-data:/var/lib/milvus
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      start_period: 90s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      - "etcd"
+      - "minio"
 
 volumes:
   kafka-data:

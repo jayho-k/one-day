@@ -1,4 +1,4 @@
-package jayho.oneday.serializer;
+package jayho.oneday.deserializer;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;

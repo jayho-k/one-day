@@ -31,7 +31,7 @@ public class ArticleViewService {
     private static final TimeUnit TTL_TIME_UNIT = MINUTES;
 
     // Caching Service
-    private final ArticleViewCache articleViewCache;
+    private final ArticleViewReadService articleViewReadService;
 
     // redis
     private final ViewMemoryRepository viewMemoryRepository;
@@ -51,7 +51,6 @@ public class ArticleViewService {
         articleViewProducer.increaseViewCount(articleId, userId);
     }
 
-
     public void increaseViewCountBackup(List<ArticleViewCount> articleViewCountList) {
         articleViewCountRepository.updateAll(articleViewCountList);
     }
@@ -61,31 +60,10 @@ public class ArticleViewService {
     }
 
     public ArticleViewCount readViewCount(Long articleId) {
-        return ArticleViewCount.create(articleId, articleViewCache.readViewCount(articleId));
+        return ArticleViewCount.create(
+                articleId,
+                articleViewReadService.readViewCount(articleId)
+        );
     }
 
-
-
-//    public ArticleViewResponseData increaseViewCountMQTest(Long articleId, Long userId) {
-//        articleViewProducer.increaseViewCount(articleId, userId);
-//        return increaseViewCount(articleId, userId);
-//    }
-
-//    public ArticleViewResponseData increaseViewCount(Long articleId, Long userId) {
-//        // 동일 User가 ttl 동안 해당 article view count x
-//        Long viewCount = articleViewCache.readViewCount(articleId);
-//
-//        // increase x
-//        if (viewAbusingMemoryRepository.isAbused(articleId, userId)) {
-//            return ArticleViewResponseData.from(ArticleViewCount.create(articleId, viewCount));
-//        }
-//
-//        // abusing register + increase
-//        viewAbusingMemoryRepository.register(articleId, userId, TTL, TTL_TIME_UNIT);
-//        ArticleViewCount articleViewCount = ArticleViewCount.create(articleId, viewMemoryRepository.increase(articleId));
-//        if (viewCount == 0L) {
-//            articleViewCountRepository.save(articleViewCount);
-//        }
-//        return ArticleViewResponseData.from(articleViewCount);
-//    }
 }
