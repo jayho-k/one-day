@@ -37,7 +37,7 @@ public class ChatMessageTest {
 
         ChatMessageRequest request = ChatMessageRequest.builder()
                 .sessionId("test")
-                .message("이번 년도 컬러는 뭐야?")
+                .message("이번 년도 컬러 알려줘")
                 .userId(1L)
                 .build();
 
