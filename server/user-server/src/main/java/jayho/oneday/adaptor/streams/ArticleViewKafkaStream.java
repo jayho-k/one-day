@@ -17,6 +17,7 @@ import org.springframework.kafka.annotation.EnableKafkaStreams;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -35,31 +36,24 @@ public class ArticleViewKafkaStream {
                 TOPIC_ARTICLE_VIEW, Consumed.with(Serdes.String(), articleViewEventSerde)
         );
 
-        stream.groupByKey()
-                .windowedBy(TimeWindows.ofSizeAndGrace(
-                        Duration.ofSeconds(10),
-                        Duration.ofSeconds(10)))
-                .aggregate(
-                        HashMap::new,
-                        (String key, ArticleViewEvent articleView, Map<Long, Long> articleViewMap) -> {
-                            articleViewMap.merge(articleView.getArticleId(), 1L, Long::sum);
-                            return articleViewMap;
-                        },
-                        Materialized.with(
-                                Serdes.String(),
-                                new MapSerde<>(Long.class, Long.class)
-                        ))
-                .suppress(Suppressed.untilWindowCloses(
-                        Suppressed.BufferConfig.unbounded()))// 임시
-                .toStream()
-                .foreach((windowedKey, articleViewMap) ->{
-                        System.out.println("articleViewMap" + articleViewMap.toString());
-                        articleViewService.increaseViewCountBackup(
-                            articleViewMap.entrySet().stream().map(
-                                    event -> ArticleViewCount.create(event.getKey(), event.getValue())
-                            ).toList());
-                    }
+        // TODO: Test
+         stream
+            .groupByKey()
+            .windowedBy(TimeWindows.ofSizeAndGrace(
+                    Duration.ofSeconds(10),
+                    Duration.ofSeconds(10)
+            ))
+            .count(Materialized.with(Serdes.String(), Serdes.Long())) // Key는 String
+            .suppress(Suppressed.untilWindowCloses(Suppressed.BufferConfig.unbounded()))
+            .toStream()
+            .foreach((windowedKey, count) -> {
+
+                System.out.println("windowed key: " + windowedKey.key());
+                System.out.println("count: " + count);
+                articleViewService.increaseViewCountBackup(
+                        List.of(ArticleViewCount.create(Long.valueOf(windowedKey.key()), count))
                 );
+            });
         return stream;
     }
 }

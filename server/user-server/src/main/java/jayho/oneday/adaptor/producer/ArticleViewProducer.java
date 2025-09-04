@@ -20,7 +20,7 @@ public class ArticleViewProducer {
         ArticleViewEvent articleViewCount = ArticleViewEvent.create(articleId, userId);
 
         // partition 1개로 임시지정 >> partition 전략 수립 후 key값 정리 필요
-        ProducerRecord<String, ArticleViewEvent> producerRecord = new ProducerRecord<>(TOPIC_ARTICLE_VIEW, TOPIC_ARTICLE_VIEW, articleViewCount);
+        ProducerRecord<String, ArticleViewEvent> producerRecord = new ProducerRecord<>(TOPIC_ARTICLE_VIEW, articleId.toString(), articleViewCount);
         kafkaTemplate.send(producerRecord)
                 .thenAccept(result ->
                         log.info("[increaseViewCount] send success{}", result))
