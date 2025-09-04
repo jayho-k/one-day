@@ -4,10 +4,7 @@ import jayho.oneday.event.ArticleLikeCountEvent;
 import jayho.oneday.event.ArticleLikeEvent;
 import jayho.oneday.event.ArticleViewEvent;
 import jayho.oneday.event.ChatMessageEvent;
-import jayho.oneday.serializer.ArticleLikeEventCountSerializer;
-import jayho.oneday.serializer.ArticleLikeEventSerializer;
-import jayho.oneday.serializer.ArticleViewEventSerializer;
-import jayho.oneday.serializer.ChatMessageSerializer;
+import jayho.oneday.serializer.*;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,15 +36,15 @@ public class KafkaProducerConfig {
         return new KafkaTemplate<>(producerDefaultFactory());
     }
 
-
     @Bean
     @Qualifier("producerArticleViewFactory")
     public ProducerFactory<String, ArticleViewEvent> producerArticleViewFactory() {
+        EventSerializer<ArticleViewEvent> serializer = new EventSerializer<>();
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ArticleViewEventSerializer.class);
-        return new DefaultKafkaProducerFactory<>(props);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, serializer);
+        return new DefaultKafkaProducerFactory<>(props, new StringSerializer(), serializer);
     }
 
     @Bean
@@ -59,11 +56,12 @@ public class KafkaProducerConfig {
     @Bean
     @Qualifier("producerArticleLikeFactory")
     public ProducerFactory<String, ArticleLikeEvent> producerArticleLikeFactory() {
+        EventSerializer<ArticleLikeEvent> serializer = new EventSerializer<>();
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ArticleLikeEventSerializer.class);
-        return new DefaultKafkaProducerFactory<>(props);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, serializer);
+        return new DefaultKafkaProducerFactory<>(props, new StringSerializer(), serializer);
     }
 
     @Bean
@@ -75,11 +73,12 @@ public class KafkaProducerConfig {
     @Bean
     @Qualifier("producerArticleLikeCountFactory")
     public ProducerFactory<String, ArticleLikeCountEvent> producerArticleLikeCountFactory() {
+        EventSerializer<ArticleLikeCountEvent> serializer = new EventSerializer<>();
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ArticleLikeEventCountSerializer.class);
-        return new DefaultKafkaProducerFactory<>(props);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, serializer);
+        return new DefaultKafkaProducerFactory<>(props, new StringSerializer(), serializer);
     }
 
     @Bean

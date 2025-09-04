@@ -6,6 +6,7 @@ import jayho.oneday.event.ArticleLikeCountEvent;
 import jayho.oneday.event.ArticleLikeEvent;
 import jayho.oneday.service.ArticleLikeService;
 
+import jayho.oneday.service.HotArticleService;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -21,6 +22,8 @@ public class ArticleLikeConsumer {
     private static final String TOPIC_ARTICLE_LIKE = "topic-article-like";
     private static final String TOPIC_ARTICLE_LIKE_COUNT = "topic-article-like-count";
     private final ArticleLikeService articleLikeService;
+
+
 
     @KafkaListener(
             topics = TOPIC_ARTICLE_LIKE,
@@ -47,7 +50,7 @@ public class ArticleLikeConsumer {
             containerFactory = "articleLikeCountKafkaListenerContainerFactory"
     )
     public void listenArticleLikeCount(ArticleLikeCountEvent articleLikeCountEvent) {
-            articleLikeService.articleLikeCountingMQ(
+        articleLikeService.articleLikeCountingMQ(
                     articleLikeCountEvent.getArticleId(),
                     articleLikeCountEvent.getLike(),
                     articleLikeCountEvent.getCount());
