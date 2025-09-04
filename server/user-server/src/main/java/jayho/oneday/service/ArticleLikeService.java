@@ -1,7 +1,6 @@
 package jayho.oneday.service;
 
 import jayho.oneday.adaptor.producer.ArticleLikeProducer;
-import jayho.oneday.controller.exception.NegativeException;
 import jayho.oneday.entity.ArticleLike;
 import jayho.oneday.entity.ArticleLikeCount;
 import jayho.oneday.entity.id.LikeId;
@@ -13,7 +12,6 @@ import jayho.oneday.service.response.ArticleLikeCountResponseData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

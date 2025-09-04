@@ -3,14 +3,16 @@ from typing import TypedDict, Annotated, Literal
 
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.constants import START
 from langgraph.graph import add_messages, StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
 from dotenv import load_dotenv
+from agent.util import get_llm
 
 # .env 파일 로드
 load_dotenv()
+llm = get_llm()
+
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -31,12 +33,6 @@ def route_tools(state: State) -> Literal["tools", "__end__"]:
         return "tools"
     return "__end__"
 
-def get_llm():
-    return ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",  # 모델 이름
-        temperature=0,
-        max_output_tokens=5000,  # 최대 생성 토큰 수
-    )
 
 def get_tools()->list:
     search_tool = DuckDuckGoSearchRun()
@@ -76,18 +72,16 @@ def get_agent_executor():
             ("user", "{messages}")
          ]
     )
-    llm = get_llm()
     tools = get_tools()
     llm_with_tools = llm.bind_tools(tools)
     return create_graph(tools, llm_with_tools, custom_prompt)
 
 def summarizer(event):
-    llm = get_llm()
     tool_messages = event["messages"]
     summarized_messages = []
     for msg in tool_messages:
         content = msg.content
-        summary_prompt = f"다음 내용을 여러 문장으로 간결하게 한국어로 요약해줘: {content}"
+        summary_prompt = f"다음 내용을 간결하게 한국어로 요약해줘: {content}"
         short_summary = llm.invoke(summary_prompt)
         summarized_messages.append(short_summary.content)
     event["summarized_messages"] = summarized_messages
