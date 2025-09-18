@@ -1,11 +1,10 @@
 package jayho.oneday.adaptor.consumer;
 
-import jayho.oneday.event.ArticleViewEvent;
+import jayho.oneday.ArticleViewEvent;
 import jayho.oneday.service.ArticleViewService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -1,9 +1,12 @@
 package jayho.oneday.config;
 
-import jayho.oneday.deserializer.*;
-import jayho.oneday.event.ArticleLikeCountEvent;
-import jayho.oneday.event.ArticleLikeEvent;
-import jayho.oneday.event.ArticleViewEvent;
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
+
+import jayho.oneday.ArticleLikeCountEvent;
+import jayho.oneday.ArticleLikeEvent;
+import jayho.oneday.ArticleViewEvent;
+import jayho.oneday.deserializer.ChatMessageDeserializer;
 import jayho.oneday.event.ChatMessageEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -25,17 +28,17 @@ import java.util.Map;
 @Configuration
 public class KafkaConsumerConfig {
 
-
     @Bean
     @Qualifier("consumerArticleViewFactory")
     public ConsumerFactory<String, ArticleViewEvent> consumerArticleViewFactory() {
-        EventDeserializer<ArticleViewEvent> deserializer = new EventDeserializer<>(ArticleViewEvent.class);
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "article-view-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
+        props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8092");
+        props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
@@ -49,13 +52,15 @@ public class KafkaConsumerConfig {
     @Bean
     @Qualifier("consumerArticleLikeFactory")
     public ConsumerFactory<String, ArticleLikeEvent> consumerArticleLikeFactory() {
-        EventDeserializer<ArticleLikeEvent> deserializer = new EventDeserializer<>(ArticleLikeEvent.class);
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "article-like-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
+        props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8092");
+        props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean
@@ -72,13 +77,15 @@ public class KafkaConsumerConfig {
     @Bean
     @Qualifier("consumerArticleLikeCountFactory")
     public ConsumerFactory<String, ArticleLikeCountEvent> consumerArticleLikeCountFactory() {
-        EventDeserializer<ArticleLikeCountEvent> deserializer = new EventDeserializer<>(ArticleLikeCountEvent.class);
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "article-like-count-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
+        props.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8092");
+        props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+
+        return new DefaultKafkaConsumerFactory<>(props);
     }
 
     @Bean

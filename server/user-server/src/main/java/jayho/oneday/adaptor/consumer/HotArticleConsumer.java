@@ -1,10 +1,9 @@
 package jayho.oneday.adaptor.consumer;
 
-import jayho.oneday.event.ArticleLikeCountEvent;
-import jayho.oneday.event.ArticleViewEvent;
+import jayho.oneday.ArticleLikeCountEvent;
+import jayho.oneday.ArticleViewEvent;
 import jayho.oneday.service.HotArticleService;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 

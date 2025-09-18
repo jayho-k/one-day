@@ -1,0 +1,19 @@
+{
+  "namespace": "jayho.oneday",
+  "type": "record",
+  "name": "ArticleLikeEvent",
+  "fields": [
+    {
+      "name": "articleId",
+      "type": "long"
+    },
+    {
+      "name": "userId",
+      "type": "long"
+    },
+    {
+      "name": "like",
+      "type": "boolean"
+    }
+  ]
+}
