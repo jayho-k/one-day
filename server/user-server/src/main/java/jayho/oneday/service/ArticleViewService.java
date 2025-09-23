@@ -1,23 +1,18 @@
 package jayho.oneday.service;
 
+import jayho.oneday.ArticleViewEvent;
 import jayho.oneday.adaptor.producer.ArticleViewProducer;
 import jayho.oneday.controller.exception.AbusingException;
 import jayho.oneday.entity.ArticleViewCount;
-import jayho.oneday.event.ArticleViewEvent;
 import jayho.oneday.repository.ArticleViewAbusingMemoryRepository;
 import jayho.oneday.repository.ArticleViewCountRepository;
 import jayho.oneday.repository.ViewMemoryRepository;
-import jayho.oneday.service.response.ArticleViewResponseData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 

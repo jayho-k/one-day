@@ -1,0 +1,37 @@
+plugins {
+    id "java-common-conventions"
+}
+
+configurations {
+    avroTools
+}
+
+dependencies{
+    implementation "org.apache.avro:avro:1.12.0"
+    avroTools "org.apache.avro:avro-tools:1.12.0"
+}
+
+def generatedAvroDir = layout.buildDirectory.dir("generated/avro-java")
+
+tasks.register('generateAvro', JavaExec) {
+    group = "build"
+    mainClass = 'org.apache.avro.tool.Main'
+    classpath = configurations.avroTools
+
+    args = [
+            "compile",
+            "schema",
+            "${projectDir}/src/main/avro",
+            generatedAvroDir.get().asFile.absolutePath
+    ]
+
+    doFirst {
+        generatedAvroDir.get().asFile.mkdirs()
+    }
+}
+
+tasks.compileJava {
+    dependsOn tasks.named("generateAvro")
+    source(generatedAvroDir)
+}
+

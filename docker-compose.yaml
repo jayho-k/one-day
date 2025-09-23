@@ -5,7 +5,7 @@ services:
     container_name: postgres
     restart: always
     volumes:
-      - ../data-resource/postgres-data:/var/lib/postgresql/data
+      - ./data-resource/postgres-data:/var/lib/postgresql/data
 #      - ./docker/postgres/entrypoint-initdb.d:/docker-entrypoint-initdb.d/
     ports:
       - '5432:5432'
@@ -30,7 +30,7 @@ services:
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
     volumes:
-      - ../data-resource/etcd:/etcd
+      - ./data-resource/etcd:/etcd
     command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
@@ -52,10 +52,10 @@ services:
       MINIO_ACCESS_KEY:  minioadmin
       MINIO_SECRET_KEY: minioadmin
     volumes:
-      - ../data-resource/minio/data1:/data1
-      - ../data-resource/minio/data2:/data2
-      - ../data-resource/minio/data3:/data3
-      - ../data-resource/minio/data4:/data4
+      - ./data-resource/minio/data1:/data1
+      - ./data-resource/minio/data2:/data2
+      - ./data-resource/minio/data3:/data3
+      - ./data-resource/minio/data4:/data4
 
   redis:
     image: redis:8.0.2
@@ -64,8 +64,8 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - ../data-resource/redis/data:/data
-      - ../data-resource/redis/conf/redis.conf:/usr/local/conf/redis.conf
+      - ./data-resource/redis/data:/data
+      - ./data-resource/redis/conf/redis.conf:/usr/local/conf/redis.conf
     command: redis-server /usr/local/conf/redis.conf
 
   kafka:
@@ -74,17 +74,32 @@ services:
     ports:
       - "9092:9092"
     volumes:
-      - ../data-resource/kafka-data:/tmp/kraft-combined-logs
+      - ./data-resource/kafka-data:/tmp/kraft-combined-logs
     environment:
       KAFKA_NODE_ID: 1
-      KAFKA_LISTENERS: CONTROLLER://0.0.0.0:9093,PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: CONTROLLER://0.0.0.0:9093,PLAINTEXT_EXTERNAL://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_EXTERNAL://localhost:9092, PLAINTEXT_INTERNAL://kafka:29092
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT_INTERNAL:PLAINTEXT,PLAINTEXT_EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.1
+    container_name: schema-registry
+    restart: always
+    ports:
+      - "8092:8092"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8092
+    depends_on:
+      - kafka
 
   standalone:
     container_name: milvus-standalone
@@ -100,7 +115,7 @@ services:
       MINIO_SECRET_KEY: minioadmin
       MQ_TYPE: woodpecker
     volumes:
-      - ../data-resource/milvus-data:/var/lib/milvus
+      - ./data-resource/milvus-data:/var/lib/milvus
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 30s

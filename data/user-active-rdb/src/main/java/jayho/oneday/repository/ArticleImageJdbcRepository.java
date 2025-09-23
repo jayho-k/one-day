@@ -26,7 +26,7 @@ public class ArticleImageJdbcRepository {
 
     public List<ArticleImage> saveAll(List<ArticleImage> articleImageList) {
 
-        String sql = "INSERT INTO ARTICLE_IMAGE (article_image_id, article_id, article_image_name, created_at) VALUES (?,?,?,?)";
+        final String sql = "INSERT INTO ARTICLE_IMAGE (article_image_id, article_id, article_image_name, created_at) VALUES (?,?,?,?)";
         int[] resultArray = jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 
             @Override
@@ -47,13 +47,12 @@ public class ArticleImageJdbcRepository {
                 .filter(i -> i >= 1)
                 .mapToObj(articleImageList::get)
                 .toList();
-
     }
 
 
     public List<ArticleImage> updateAll(List<ArticleImage> articleImageList) {
 
-        String sql = "UPDATE article_image SET article_image_name=?, delete=? WHERE article_image_id = ?";
+        final String sql = "UPDATE article_image SET article_image_name=?, delete=? WHERE article_image_id = ?";
 
         int[] resultArray = jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
 

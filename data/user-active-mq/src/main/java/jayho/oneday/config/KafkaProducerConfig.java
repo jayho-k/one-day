@@ -1,8 +1,10 @@
 package jayho.oneday.config;
 
-import jayho.oneday.event.ArticleLikeCountEvent;
-import jayho.oneday.event.ArticleLikeEvent;
-import jayho.oneday.event.ArticleViewEvent;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
+import jayho.oneday.ArticleLikeCountEvent;
+import jayho.oneday.ArticleLikeEvent;
+import jayho.oneday.ArticleViewEvent;
 import jayho.oneday.event.ChatMessageEvent;
 import jayho.oneday.serializer.*;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -27,6 +29,8 @@ public class KafkaProducerConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8092");
+        props.put(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS, true); // 스키마 자동 등록
         return new DefaultKafkaProducerFactory<>(props);
     }
 
@@ -39,12 +43,13 @@ public class KafkaProducerConfig {
     @Bean
     @Qualifier("producerArticleViewFactory")
     public ProducerFactory<String, ArticleViewEvent> producerArticleViewFactory() {
-        EventSerializer<ArticleViewEvent> serializer = new EventSerializer<>();
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, serializer);
-        return new DefaultKafkaProducerFactory<>(props, new StringSerializer(), serializer);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8092");
+        props.put(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS, true); // 스키마 자동 등록
+        return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean
@@ -56,12 +61,13 @@ public class KafkaProducerConfig {
     @Bean
     @Qualifier("producerArticleLikeFactory")
     public ProducerFactory<String, ArticleLikeEvent> producerArticleLikeFactory() {
-        EventSerializer<ArticleLikeEvent> serializer = new EventSerializer<>();
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, serializer);
-        return new DefaultKafkaProducerFactory<>(props, new StringSerializer(), serializer);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8092");
+        props.put(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS, true); // 스키마 자동 등록
+        return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean
@@ -73,12 +79,13 @@ public class KafkaProducerConfig {
     @Bean
     @Qualifier("producerArticleLikeCountFactory")
     public ProducerFactory<String, ArticleLikeCountEvent> producerArticleLikeCountFactory() {
-        EventSerializer<ArticleLikeCountEvent> serializer = new EventSerializer<>();
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, serializer);
-        return new DefaultKafkaProducerFactory<>(props, new StringSerializer(), serializer);
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        props.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, "http://localhost:8092");
+        props.put(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS, true); // 스키마 자동 등록
+        return new DefaultKafkaProducerFactory<>(props);
     }
 
     @Bean
@@ -94,6 +101,7 @@ public class KafkaProducerConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ChatMessageSerializer.class);
+
         return new DefaultKafkaProducerFactory<>(props);
     }
 
@@ -102,7 +110,4 @@ public class KafkaProducerConfig {
     public KafkaTemplate<String, ChatMessageEvent> kafkaChatMessageTemplate() {
         return new KafkaTemplate<>(producerChatMessageFactory());
     }
-
-
-
 }
