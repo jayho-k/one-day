@@ -27,7 +27,7 @@ public class ArticleLikeConsumer {
             containerFactory = "articleLikeKafkaListenerContainerFactory",
             properties = {
                     ConsumerConfig.FETCH_MIN_BYTES_CONFIG + ":5242880", // 5MB
-                    ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG + ":5000" // 5초
+                    ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG + ":10000" // 10초
             }
     )
     public void listenArticleLike(List<ArticleLikeEvent> events) {
