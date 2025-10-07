@@ -1,10 +1,10 @@
 package jayho.oneday.service;
 
+import jayho.oneday.ArticleLikeCountEvent;
 import jayho.oneday.adaptor.producer.ArticleLikeProducer;
 import jayho.oneday.entity.ArticleLike;
 import jayho.oneday.entity.ArticleLikeCount;
 import jayho.oneday.entity.id.LikeId;
-import jayho.oneday.event.ArticleLikeCountEvent;
 import jayho.oneday.repository.ArticleLikeCountRepository;
 import jayho.oneday.repository.ArticleLikeMemoryRepository;
 import jayho.oneday.repository.ArticleLikeRepository;

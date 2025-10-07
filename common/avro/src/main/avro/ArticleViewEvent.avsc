@@ -1,0 +1,15 @@
+{
+  "namespace": "jayho.oneday",
+  "type": "record",
+  "name": "ArticleViewEvent",
+  "fields": [
+    {
+      "name": "articleId",
+      "type": "long"
+    },
+    {
+      "name": "userId",
+      "type": "long"
+    }
+  ]
+}

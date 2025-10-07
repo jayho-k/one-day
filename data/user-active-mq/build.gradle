@@ -3,13 +3,24 @@ plugins {
     id "spring-common-conventions"
 }
 
+repositories {
+    maven {
+        url "https://packages.confluent.io/maven/"
+    }
+}
 
 dependencies {
     implementation 'org.springframework.kafka:spring-kafka'
     implementation 'org.apache.kafka:kafka-streams'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
+    implementation 'io.confluent:kafka-avro-serializer:8.0.0'
+    implementation "io.confluent:kafka-streams-avro-serde:8.0.0"
+    implementation 'io.confluent:kafka-schema-registry-client:8.0.0'
+
+    implementation project(':common:avro')
     implementation project(':data:user-active-rdb')
 }

@@ -5,6 +5,7 @@ plugins {
 rootProject.name = 'one-day'
 
 include(':common')
+include(':common:avro')
 include(':common:snowflake')
 
 include(':server')
