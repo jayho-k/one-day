@@ -23,6 +23,4 @@ public class ArticleViewConsumer {
     public void listenIncreaseArticleView(ArticleViewEvent articleViewEvent) {
         articleViewService.increaseViewCount(articleViewEvent);
     }
-
-
 }

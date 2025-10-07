@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -25,6 +27,7 @@ public class ArticleLikeService {
 
     private final ArticleLikeRepository articleLikeRepository; // rdb
     private final ArticleLikeCountRepository articleLikeCountRepository; // rdb
+    private final ArticleLikeCountJdbcRepository articleLikeCountJdbcRepository; // rdb
     private final ArticleLikeMemoryRepository articleLikeMemoryRepository; // memory
     private final ArticleLikeReadService articleLikeReadService; // memory
     private final ArticleLikeProducer articleLikeProducer; // mq
@@ -111,6 +114,46 @@ public class ArticleLikeService {
                         }
                 );
     }
+
+    // MQ(article like count) >> message counting >> DB (counting)
+    public void articleLikeCountingMQ2(List<ArticleLikeCount> articleLikeCountList) {
+        // update >> res 0 >> bulk insert
+        // select 해야나네...
+
+        // 얘네만 update
+        List<ArticleLikeCount> forUpdateArticleCountList = articleLikeCountRepository.findByArticleIdIn(
+                articleLikeCountList.stream()
+                        .map(ArticleLikeCount::getArticleId).toList()
+        );
+        Map<Long, ArticleLikeCount> forUpdateArticleCountMap = forUpdateArticleCountList.stream()
+                .collect(Collectors.toMap(
+                        ArticleLikeCount::getArticleId,
+                        Function.identity(),
+                        (existing, replacement) -> existing,
+                        HashMap::new
+                ));
+
+        List<ArticleLikeCount> forInsertArticleCountList = new ArrayList<>();
+        articleLikeCountList.forEach(articleLikeCount -> {
+            if (!(forUpdateArticleCountMap.containsKey(articleLikeCount.getArticleId()))) {
+                forInsertArticleCountList.add(articleLikeCount);
+            }
+        });
+
+        int[] resultArr = articleLikeCountJdbcRepository.updateAll(forUpdateArticleCountList);
+        IntStream.range(0, forUpdateArticleCountList.size()).forEach(idx -> {
+            Long articleId = forUpdateArticleCountList.get(idx).getArticleId();
+            articleLikeMemoryRepository.setLikeCount(
+                    articleId,
+                    forUpdateArticleCountMap.get(articleId).getLikeCount() +
+                            articleLikeCountList.get(idx).getLikeCount()
+                    );
+        });
+
+        // 나머지
+        articleLikeCountJdbcRepository.saveAll(forInsertArticleCountList);
+    }
+
 
     public void articleUnlikeMQ(Long articleId, Long userId) {
         articleLikeRepository.findById(LikeId.create(articleId, userId))
