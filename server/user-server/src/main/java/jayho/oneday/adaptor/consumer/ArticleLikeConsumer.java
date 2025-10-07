@@ -2,6 +2,7 @@ package jayho.oneday.adaptor.consumer;
 
 import jayho.oneday.entity.Article;
 import jayho.oneday.entity.ArticleLike;
+import jayho.oneday.entity.ArticleLikeCount;
 import jayho.oneday.event.ArticleLikeCountEvent;
 import jayho.oneday.event.ArticleLikeEvent;
 import jayho.oneday.service.ArticleLikeService;
@@ -44,15 +45,37 @@ public class ArticleLikeConsumer {
         ).toList());
     }
 
+//    @KafkaListener(
+//            topics = TOPIC_ARTICLE_LIKE_COUNT,
+//            groupId = "article-like-count-group",
+//            containerFactory = "articleLikeCountKafkaListenerContainerFactory"
+//
+//    )
+//    public void listenArticleLikeCount(ArticleLikeCountEvent articleLikeCountEvent) {
+//        articleLikeService.articleLikeCountingMQ(
+//                    articleLikeCountEvent.getArticleId(),
+//                    articleLikeCountEvent.getLike(),
+//                    articleLikeCountEvent.getCount());
+//    }
+
     @KafkaListener(
             topics = TOPIC_ARTICLE_LIKE_COUNT,
             groupId = "article-like-count-group",
-            containerFactory = "articleLikeCountKafkaListenerContainerFactory"
+            containerFactory = "articleLikeCountKafkaListenerContainerFactory",
+            properties = {
+                    ConsumerConfig.FETCH_MIN_BYTES_CONFIG + ":5242880", // 5MB
+                    ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG + ":5000" // 5초
+            }
+
     )
-    public void listenArticleLikeCount(ArticleLikeCountEvent articleLikeCountEvent) {
-        articleLikeService.articleLikeCountingMQ(
-                    articleLikeCountEvent.getArticleId(),
-                    articleLikeCountEvent.getLike(),
-                    articleLikeCountEvent.getCount());
+    public void listenArticleLikeCount2(List<ArticleLikeCountEvent> events) {
+        articleLikeService.articleLikeCountingMQ2(
+                events.stream().map(event ->
+                        ArticleLikeCount.create(
+                                event.getArticleId(),
+                                event.getCount()
+                        )
+                ).toList());
     }
+
 }
