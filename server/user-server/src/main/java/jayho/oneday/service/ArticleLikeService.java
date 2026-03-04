@@ -66,14 +66,21 @@ public class ArticleLikeService {
     @NotNull
     private Map<Long, ArticleLikeCountEvent> getArticleLikeCountEventMap(List<ArticleLike> sucessInsertList) {
         Map<Long, ArticleLikeCountEvent> map = new HashMap<>();
-        sucessInsertList.forEach(articleLike -> {
-            map.computeIfAbsent(articleLike.getArticleId(), k ->
-                    ArticleLikeCountEvent.newBuilder()
-                            .setArticleId(articleLike.getArticleId())
-                            .setCount(map.get(articleLike.getArticleId()).getCount() + 1)
-                            .setLike(articleLike.getLiked())
-                            .build());
-        });
+        sucessInsertList.forEach(articleLike ->
+                map.merge(
+                        articleLike.getArticleId(),
+                        ArticleLikeCountEvent.newBuilder()
+                                .setArticleId(articleLike.getArticleId())
+                                .setCount(1L)
+                                .setLike(articleLike.getLiked())
+                                .build(),
+                        (existing, newEvent) -> ArticleLikeCountEvent.newBuilder()
+                                .setArticleId(existing.getArticleId())
+                                .setCount(existing.getCount() + 1)
+                                .setLike(existing.getLike())
+                                .build()
+                )
+        );
         return map;
     }
 
